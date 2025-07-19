@@ -1,0 +1,41 @@
+local player = game.Players.LocalPlayer
+
+local fpsGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+fpsGui.Name = "FPS_Display"
+fpsGui.ResetOnSpawn = false
+
+local fpsLabel = Instance.new("TextLabel")
+fpsLabel.Size = UDim2.new(0, 150, 0, 30)
+fpsLabel.Position = UDim2.new(0, 10, 0, 10)
+fpsLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+fpsLabel.BackgroundTransparency = 0.2
+fpsLabel.TextColor3 = Color3.new(1, 1, 1)
+fpsLabel.Font = Enum.Font.GothamBold
+fpsLabel.TextSize = 18
+fpsLabel.Text = "FPS: ..."
+fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+fpsLabel.Parent = fpsGui
+
+local corner = Instance.new("UICorner", fpsLabel)
+corner.CornerRadius = UDim.new(0, 8)
+
+local stroke = Instance.new("UIStroke", fpsLabel)
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(0, 200, 255)
+
+local RunService = game:GetService("RunService")
+
+local lastTime = tick()
+local frames = 0
+
+RunService.RenderStepped:Connect(function()
+    frames += 1
+    local currentTime = tick()
+
+    if currentTime - lastTime >= 1 then
+        local fps = math.floor(frames / (currentTime - lastTime))
+        fpsLabel.Text = "FPS: " .. fps
+        frames = 0
+        lastTime = currentTime
+    end
+end)
