@@ -1,0 +1,37 @@
+_G.ToggleJumpFix = true
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local desiredAnimId = "http://www.roblox.com/asset/?id=104325245285198"
+
+local function checkAndFixJumpAnimation()
+    if not _G.ToggleJumpFix then
+        print("ปิดระบบตรวจสอบ Jump Animation แล้ว")
+        return
+    end
+
+    local char = player.Character or player.CharacterAdded:Wait()
+    local animate = char:WaitForChild("Animate", 5)
+    local jumpAnim = animate:WaitForChild("jump", 5):WaitForChild("JumpAnim", 5)
+
+    if jumpAnim.AnimationId ~= desiredAnimId then
+        print("Jump Animation ไม่ตรง กำลังเปลี่ยนเป็น ID ใหม่...")
+        jumpAnim.AnimationId = desiredAnimId
+
+        local humanoid = char:WaitForChild("Humanoid")
+        humanoid.Jump = false
+        task.wait(0.1)
+        humanoid.Jump = false
+    else
+        print("Jump Animation ตรงอยู่แล้ว:", jumpAnim.AnimationId)
+    end
+end
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    checkAndFixJumpAnimation()
+end)
+
+if player.Character then
+    checkAndFixJumpAnimation()
+end
