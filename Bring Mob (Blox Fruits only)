@@ -1,0 +1,126 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:FindFirstChildOfClass("PlayerGui")
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 100, 0, 30)  -- ขนาดใหม่ของปุ่ม
+button.Position = UDim2.new(0.5, 150, 0.8, -290)  -- ตำแหน่งใหม่ของปุ่ม
+button.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+button.Text = "Bring Mobs"
+button.Font = Enum.Font.GothamBlack
+button.TextSize = 15  -- ขนาดตัวอักษรใหม่
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Parent = gui
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 10)  -- ทำให้มุมโค้ง
+buttonCorner.Parent = button
+
+local buttonGradient = Instance.new("UIGradient")
+buttonGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 200, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 200))
+}
+buttonGradient.Parent = button
+
+local buttonStroke = Instance.new("UIStroke")
+buttonStroke.Thickness = 3
+buttonStroke.Color = Color3.fromRGB(0, 200, 255)
+buttonStroke.Parent = button
+
+_G.bringmob = false
+
+local detectRadius = 350
+
+local selectedMob
+
+local function pickRandomMob()
+    local folder = workspace:FindFirstChild("Enemies")
+    if not folder then return nil end
+    local playerRoot = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not playerRoot then return nil end
+
+    local candidates = {}
+    for _, mob in ipairs(folder:GetChildren()) do
+        local root = mob:FindFirstChild("HumanoidRootPart")
+        if root and (root.Position - playerRoot.Position).Magnitude <= detectRadius then
+            table.insert(candidates, mob)
+        end
+    end
+
+    if #candidates == 0 then return nil end
+    return candidates[math.random(1, #candidates)]
+end
+
+local function bringMobsOnce()
+    local enemies = workspace:FindFirstChild("Enemies")
+    if not enemies then return end
+
+    if selectedMob then
+        local h = selectedMob:FindFirstChild("Humanoid")
+        if not h or h.Health <= 0 then
+            selectedMob = nil
+        end
+    end
+    if not selectedMob then
+        selectedMob = pickRandomMob()
+    end
+    if not selectedMob then return end
+
+    local targetCF = selectedMob.HumanoidRootPart.CFrame
+
+    for _, mob in ipairs(enemies:GetChildren()) do
+        local root = mob:FindFirstChild("HumanoidRootPart")
+        local h    = mob:FindFirstChild("Humanoid")
+        if root and h then
+            -- ปรับเดิน/กระโดดเป็น 0
+            h.WalkSpeed = 0
+            h.JumpPower = 0
+
+            -- วาปหากไม่ใช่ selectedMob และอยู่ในระยะ
+            if mob ~= selectedMob and (root.Position - selectedMob.HumanoidRootPart.Position).Magnitude <= detectRadius then
+                root.CFrame = targetCF
+                root.CanCollide = false
+            end
+        end
+    end
+end
+
+local dragging = false
+local dragInput, dragStart, startPos
+
+button.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = button.Position
+    end
+end)
+
+button.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+button.MouseButton1Click:Connect(function()
+    _G.bringmob = true
+end)
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if _G.bringmob then
+        bringMobsOnce()
+        _G.bringmob = false  -- ทำครั้งเดียวแล้วรีเซ็ต
+    end
+end)
+
+pcall(function()
+    sethiddenproperty(game.Players.LocalPlayer, "SimulationRadius", math.huge)
+end)
