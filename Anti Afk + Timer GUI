@@ -1,0 +1,52 @@
+local player = game.Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:WaitForChild("PlayerGui")
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, -0.2, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BackgroundTransparency = 1
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0.5, 0)
+title.BackgroundTransparency = 1
+title.Text = "Anti AFK"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+title.Parent = frame
+
+local timerLabel = Instance.new("TextLabel")
+timerLabel.Size = UDim2.new(1, 0, 0.5, 0)
+timerLabel.Position = UDim2.new(0, 0, 0.2, 0)
+timerLabel.BackgroundTransparency = 1
+timerLabel.Font = Enum.Font.Gotham
+timerLabel.TextSize = 20
+timerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+timerLabel.Text = "00:00:00"
+timerLabel.Parent = frame
+
+local startTime = os.time()
+game:GetService("RunService").RenderStepped:Connect(function()
+    local elapsed = os.time() - startTime
+    local hours = math.floor(elapsed / 3600)
+    local minutes = math.floor((elapsed % 3600) / 60)
+    local seconds = elapsed % 60
+    timerLabel.Text = string.format("%02d:%02d:%02d", hours, minutes, seconds)
+end)
+
+local VirtualUser = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+    wait(1)
+    VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+end)
