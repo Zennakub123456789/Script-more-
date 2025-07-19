@@ -1,0 +1,8 @@
+setfpscap(120)
+
+local StarterGui = game:GetService("StarterGui")
+StarterGui:SetCore("SendNotification", {
+    Title = "FPS Unlocker",
+    Text = "ปลดล็อก FPS แล้ว!",
+    Duration = 4
+})
