@@ -54,11 +54,6 @@ local Tab = Window:Tab({
     Icon = "bird",
     Locked = false,
 })
-local Tab2 = Window:Tab2({
-    Title = "Main",
-    Icon = "bird",
-    Locked = false,
-})
 local Section = Tab:Section({ 
     Title = "Status:",
     TextXAlignment = "Left",
