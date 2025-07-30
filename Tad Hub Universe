@@ -255,7 +255,7 @@ DropdownDelete = Tab:Dropdown({
 
 Tab:Button({
     Title = "❌ Delete the selected waypoints",
-    Desc = "Delete the selected Waypoints from the delete list.",
+    Desc = "Delete the selected Waypoints from the delete list. Please go back and save it.",
     Callback = function()
         for i, wp in pairs(Waypoints) do
             if wp.Name == SelectedWaypointDelete then
