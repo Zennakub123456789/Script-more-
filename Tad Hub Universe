@@ -1,0 +1,341 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HRP = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+local HttpService = game:GetService("HttpService")
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+WindUI:SetNotificationLower(true)
+
+local Window = WindUI:CreateWindow({
+    Title = "Tad Hub | Universe | 0.0.2",
+    Icon = "door-open",
+    Author = "By Tad Hub",
+    Folder = "TadHub",
+    Size = UDim2.fromOffset(550, 350),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    Background = "", -- rbxassetid only
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+        Anonymous = true,
+        Callback = function()
+            print("clicked")
+        end,
+    },
+})
+
+Window:EditOpenButton({
+    Title = "Open Example UI",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new( -- gradient
+        Color3.fromHex("FF0F7B"), 
+        Color3.fromHex("F89B29")
+    ),
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+
+Window:IsResizable(true)
+
+Window:SetToggleKey(Enum.KeyCode.H)
+
+local Tab = Window:Tab({
+    Title = "Main",
+    Icon = "bird",
+    Locked = false,
+})
+local Section = Tab:Section({ 
+    Title = "Setup Waypoints",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
+-- ข้อมูล
+local Waypoints = {}
+local SelectedWaypointTeleport = nil
+local SelectedWaypointDelete = nil
+local WaypointName = ""
+
+-- 📌 ตัวแปร Dropdown เก็บไว้ใช้ตอน Refresh
+local DropdownTeleport = nil
+local DropdownDelete = nil
+
+local SelectedWaypointDelete = nil
+
+-- 🔄 ฟังก์ชันอัปเดต Dropdown ทั้ง 2
+local function UpdateDropdowns()
+    local names = {}
+    for _, wp in pairs(Waypoints) do
+        if typeof(wp) == "table" and typeof(wp.Name) == "string" then
+            table.insert(names, wp.Name)
+        end
+    end
+    if DropdownTeleport then
+        DropdownTeleport:Refresh(names)
+    end
+    if DropdownDelete then
+        DropdownDelete:Refresh(names)
+    end
+end
+
+-- 📝 ช่องใส่ชื่อ
+Tab:Input({
+    Title = "📝 ชื่อ Waypoint",
+    Desc = "ตั้งชื่อที่ต้องการ",
+    Placeholder = "เช่น บ้านเกิด",
+    Callback = function(text)
+        WaypointName = text
+    end
+})
+
+Tab:Button({
+    Title = "➕ Set Waypoint",
+    Desc = "บันทึกตำแหน่งของคุณ",
+    Callback = function()
+        if WaypointName == "" then
+            WindUI:Notify({
+                Title = "ยังไม่ได้ตั้งชื่อ",
+                Content = "กรุณาใส่ชื่อก่อนบันทึก",
+                Icon = "type",
+                Duration = 4,
+            })
+            return
+        end
+
+        table.insert(Waypoints, {Name = WaypointName, Pos = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position})
+        WaypointName = ""
+        UpdateDropdowns()
+
+        WindUI:Notify({
+            Title = "บันทึกสำเร็จ",
+            Content = "เพิ่ม Waypoint ใหม่แล้ว",
+            Icon = "check-circle",
+            Duration = 3,
+        })
+    end
+})
+
+Tab:Button({
+    Title = "💾 บันทึก Waypoints ลงไฟล์",
+    Desc = "กดเพื่อเซฟทั้งหมดลงไฟล์ JSON และ ถ้าคุณลบ Waypoints แล้ว ให้มากดบันทึกใหม่ด้วย",
+    Callback = function()
+        if #Waypoints == 0 then
+            WindUI:Notify({
+                Title = "⚠️ ไม่มีข้อมูล",
+                Content = "ยังไม่มี Waypoints ให้บันทึก",
+                Icon = "alert-circle",
+                Duration = 3,
+            })
+            return
+        end
+
+        -- ✅ สร้างโฟลเดอร์ถ้ายังไม่มี
+        if not isfolder("Waypoints") then
+            makefolder("Waypoints")
+        end
+
+        local placeFolder = "Waypoints/" .. tostring(game.PlaceId)
+        if not isfolder(placeFolder) then
+            makefolder(placeFolder)
+        end
+
+        local filePath = placeFolder .. "/data.json"
+
+        -- เตรียมข้อมูล JSON
+        local data = {}
+        for _, wp in pairs(Waypoints) do
+            table.insert(data, {
+                Name = wp.Name,
+                Pos = {x = wp.Pos.X, y = wp.Pos.Y, z = wp.Pos.Z}
+            })
+        end
+
+        local success, result = pcall(function()
+            writefile(filePath, game:GetService("HttpService"):JSONEncode(data))
+        end)
+
+        if success then
+            WindUI:Notify({
+                Title = "✅ บันทึกสำเร็จ",
+                Content = "Waypoints ถูกบันทึกไว้ที่:\n" .. filePath,
+                Icon = "save",
+                Duration = 4,
+            })
+        else
+            WindUI:Notify({
+                Title = "❌ บันทึกไม่สำเร็จ",
+                Content = "Error: " .. tostring(result),
+                Icon = "x",
+                Duration = 4,
+            })
+        end
+    end
+})
+
+local Section = Tab:Section({ 
+    Title = "Waypoints",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
+-- 📍 Dropdown เลือกวาร์ป
+DropdownTeleport = Tab:Dropdown({
+    Title = "🚀 เลือกตำแหน่งที่จะวาร์ป",
+    Values = {},
+    Value = nil,
+    Callback = function(option)
+        SelectedWaypointTeleport = option
+    end
+})
+
+Tab:Button({
+    Title = "📦 วาร์ปไปยัง Waypoint",
+    Desc = "วาร์ปไปยังตำแหน่งที่เลือก",
+    Callback = function()
+        local character = LocalPlayer.Character
+        if not character then
+            WindUI:Notify({
+                Title = "เกิดข้อผิดพลาด",
+                Content = "ยังไม่มีตัวละคร (Character)",
+                Icon = "alert-triangle",
+                Duration = 4,
+            })
+            return
+        end
+
+        local HRP = character:FindFirstChild("HumanoidRootPart")
+        if not HRP then
+            WindUI:Notify({
+                Title = "เกิดข้อผิดพลาด",
+                Content = "ไม่พบ HumanoidRootPart",
+                Icon = "alert-triangle",
+                Duration = 4,
+            })
+            return
+        end
+
+        for _, wp in pairs(Waypoints) do
+            if wp.Name == SelectedWaypointTeleport then
+                HRP.CFrame = CFrame.new(wp.Pos)
+                WindUI:Notify({
+                    Title = "วาร์ปสำเร็จ",
+                    Content = "คุณถูกวาร์ปไปยัง: " .. wp.Name,
+                    Icon = "map-pin",
+                    Duration = 4,
+                })
+                return
+            end
+        end
+
+        WindUI:Notify({
+            Title = "ยังไม่ได้เลือกตำแหน่ง",
+            Content = "กรุณาเลือก Waypoint ก่อนวาร์ป",
+            Icon = "target",
+            Duration = 4,
+        })
+    end
+})
+
+local Section = Tab:Section({ 
+    Title = "Remove Waypoints",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
+-- 🗑️ Dropdown เลือกตำแหน่งที่จะลบ (แยกจากวาร์ป)
+DropdownDelete = Tab:Dropdown({
+    Title = "🗑️ เลือก Waypoint ที่จะลบ",
+    Values = {},
+    Value = nil,
+    Callback = function(option)
+        SelectedWaypointDelete = option
+    end
+})
+
+Tab:Button({
+    Title = "❌ ลบ Waypoint ที่เลือก",
+    Desc = "ลบตำแหน่งที่เลือกจากรายการลบ",
+    Callback = function()
+        for i, wp in pairs(Waypoints) do
+            if wp.Name == SelectedWaypointDelete then
+                table.remove(Waypoints, i)
+                SelectedWaypointDelete = nil
+                SelectedWaypointTeleport = nil
+                UpdateDropdowns()
+
+                WindUI:Notify({
+                    Title = "ลบสำเร็จ",
+                    Content = "ลบ Waypoint เรียบร้อยแล้ว",
+                    Icon = "trash",
+                    Duration = 3,
+                })
+                return
+            end
+        end
+
+        WindUI:Notify({
+            Title = "ยังไม่ได้เลือกตำแหน่ง",
+            Content = "กรุณาเลือก Waypoint ที่จะลบ",
+            Icon = "target",
+            Duration = 4,
+        })
+    end
+})
+
+-- 🔁 โหลด Waypoints จากไฟล์โดยไม่ใช้ฟังก์ชันแยก
+do
+    local placeFolder = "Waypoints/" .. tostring(game.PlaceId)
+    local filePath = placeFolder .. "/data.json"
+
+    if isfile(filePath) then
+        local content = readfile(filePath)
+        local success, data = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(content)
+        end)
+
+        if success and typeof(data) == "table" then
+            table.clear(Waypoints)
+
+            for _, wp in pairs(data) do
+                if wp.Name and wp.Pos then
+                    table.insert(Waypoints, {
+                        Name = wp.Name,
+                        Pos = Vector3.new(wp.Pos.x, wp.Pos.y, wp.Pos.z)
+                    })
+                end
+            end
+
+            UpdateDropdowns()
+
+            WindUI:Notify({
+                Title = "📥 โหลด Waypoints สำเร็จ",
+                Content = "จำนวน: " .. tostring(#Waypoints),
+                Icon = "download",
+                Duration = 3
+            })
+        else
+            WindUI:Notify({
+                Title = "❌ โหลดล้มเหลว",
+                Content = "อ่าน JSON ไม่สำเร็จ",
+                Icon = "x",
+                Duration = 4
+            })
+        end
+    else
+        WindUI:Notify({
+            Title = "โปรดบันทึก Waypoints",
+            Content = "ยังไม่เคยบันทึกตำแหน่งในแมพนี้",
+            Icon = "folder",
+            Duration = 3
+        })
+    end
+end
