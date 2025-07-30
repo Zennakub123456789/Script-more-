@@ -59,19 +59,16 @@ local Section = Tab:Section({
     TextSize = 17, -- Default Size
 })
 
--- ข้อมูล
 local Waypoints = {}
 local SelectedWaypointTeleport = nil
 local SelectedWaypointDelete = nil
 local WaypointName = ""
 
--- 📌 ตัวแปร Dropdown เก็บไว้ใช้ตอน Refresh
 local DropdownTeleport = nil
 local DropdownDelete = nil
 
 local SelectedWaypointDelete = nil
 
--- 🔄 ฟังก์ชันอัปเดต Dropdown ทั้ง 2
 local function UpdateDropdowns()
     local names = {}
     for _, wp in pairs(Waypoints) do
@@ -87,11 +84,10 @@ local function UpdateDropdowns()
     end
 end
 
--- 📝 ช่องใส่ชื่อ
 Tab:Input({
-    Title = "📝 ชื่อ Waypoint",
-    Desc = "ตั้งชื่อที่ต้องการ",
-    Placeholder = "เช่น บ้านเกิด",
+    Title = "📝 Waypoints Name",
+    Desc = "Set Name Your want ",
+    Placeholder = "input here",
     Callback = function(text)
         WaypointName = text
     end
@@ -99,12 +95,12 @@ Tab:Input({
 
 Tab:Button({
     Title = "➕ Set Waypoint",
-    Desc = "บันทึกตำแหน่งของคุณ",
+    Desc = "Save your location",
     Callback = function()
         if WaypointName == "" then
             WindUI:Notify({
-                Title = "ยังไม่ได้ตั้งชื่อ",
-                Content = "กรุณาใส่ชื่อก่อนบันทึก",
+                Title = "Not yet named",
+                Content = "Please enter your name before saving.",
                 Icon = "type",
                 Duration = 4,
             })
@@ -116,8 +112,8 @@ Tab:Button({
         UpdateDropdowns()
 
         WindUI:Notify({
-            Title = "บันทึกสำเร็จ",
-            Content = "เพิ่ม Waypoint ใหม่แล้ว",
+            Title = "Save successful",
+            Content = "New waypoints added",
             Icon = "check-circle",
             Duration = 3,
         })
@@ -125,20 +121,19 @@ Tab:Button({
 })
 
 Tab:Button({
-    Title = "💾 บันทึก Waypoints ลงไฟล์",
-    Desc = "กดเพื่อเซฟทั้งหมดลงไฟล์ JSON และ ถ้าคุณลบ Waypoints แล้ว ให้มากดบันทึกใหม่ด้วย",
+    Title = "💾 Save Waypoints to a file",
+    Desc = "Click to save all to a JSON file and if you have deleted Waypoints, click to save again. (Must do)",
     Callback = function()
         if #Waypoints == 0 then
             WindUI:Notify({
-                Title = "⚠️ ไม่มีข้อมูล",
-                Content = "ยังไม่มี Waypoints ให้บันทึก",
+                Title = "⚠️ No Information",
+                Content = "There are no waypoints to save.",
                 Icon = "alert-circle",
                 Duration = 3,
             })
             return
         end
 
-        -- ✅ สร้างโฟลเดอร์ถ้ายังไม่มี
         if not isfolder("Waypoints") then
             makefolder("Waypoints")
         end
@@ -150,7 +145,6 @@ Tab:Button({
 
         local filePath = placeFolder .. "/data.json"
 
-        -- เตรียมข้อมูล JSON
         local data = {}
         for _, wp in pairs(Waypoints) do
             table.insert(data, {
@@ -165,14 +159,14 @@ Tab:Button({
 
         if success then
             WindUI:Notify({
-                Title = "✅ บันทึกสำเร็จ",
-                Content = "Waypoints ถูกบันทึกไว้ที่:\n" .. filePath,
+                Title = "✅ Save successful",
+                Content = "Waypoints Save at:\n" .. filePath,
                 Icon = "save",
                 Duration = 4,
             })
         else
             WindUI:Notify({
-                Title = "❌ บันทึกไม่สำเร็จ",
+                Title = "❌ Save failed",
                 Content = "Error: " .. tostring(result),
                 Icon = "x",
                 Duration = 4,
@@ -187,9 +181,8 @@ local Section = Tab:Section({
     TextSize = 17, -- Default Size
 })
 
--- 📍 Dropdown เลือกวาร์ป
 DropdownTeleport = Tab:Dropdown({
-    Title = "🚀 เลือกตำแหน่งที่จะวาร์ป",
+    Title = "🚀 Select the location to teleport",
     Values = {},
     Value = nil,
     Callback = function(option)
@@ -198,14 +191,14 @@ DropdownTeleport = Tab:Dropdown({
 })
 
 Tab:Button({
-    Title = "📦 วาร์ปไปยัง Waypoint",
-    Desc = "วาร์ปไปยังตำแหน่งที่เลือก",
+    Title = "📦 Teleport to Waypoint",
+    Desc = "Teleport to the selected Waypoints",
     Callback = function()
         local character = LocalPlayer.Character
         if not character then
             WindUI:Notify({
-                Title = "เกิดข้อผิดพลาด",
-                Content = "ยังไม่มีตัวละคร (Character)",
+                Title = "error",
+                Content = "No characters yet",
                 Icon = "alert-triangle",
                 Duration = 4,
             })
@@ -215,8 +208,8 @@ Tab:Button({
         local HRP = character:FindFirstChild("HumanoidRootPart")
         if not HRP then
             WindUI:Notify({
-                Title = "เกิดข้อผิดพลาด",
-                Content = "ไม่พบ HumanoidRootPart",
+                Title = "error",
+                Content = "HumanoidRootPart not found",
                 Icon = "alert-triangle",
                 Duration = 4,
             })
@@ -227,8 +220,8 @@ Tab:Button({
             if wp.Name == SelectedWaypointTeleport then
                 HRP.CFrame = CFrame.new(wp.Pos)
                 WindUI:Notify({
-                    Title = "วาร์ปสำเร็จ",
-                    Content = "คุณถูกวาร์ปไปยัง: " .. wp.Name,
+                    Title = "Teleport successful",
+                    Content = "You have been Teleport to: " .. wp.Name,
                     Icon = "map-pin",
                     Duration = 4,
                 })
@@ -237,8 +230,8 @@ Tab:Button({
         end
 
         WindUI:Notify({
-            Title = "ยังไม่ได้เลือกตำแหน่ง",
-            Content = "กรุณาเลือก Waypoint ก่อนวาร์ป",
+            Title = "Waypoints not yet selected",
+            Content = "Please select a waypoint before teleport.",
             Icon = "target",
             Duration = 4,
         })
@@ -251,9 +244,8 @@ local Section = Tab:Section({
     TextSize = 17, -- Default Size
 })
 
--- 🗑️ Dropdown เลือกตำแหน่งที่จะลบ (แยกจากวาร์ป)
 DropdownDelete = Tab:Dropdown({
-    Title = "🗑️ เลือก Waypoint ที่จะลบ",
+    Title = "🗑️ Select the waypoints to delete.",
     Values = {},
     Value = nil,
     Callback = function(option)
@@ -262,8 +254,8 @@ DropdownDelete = Tab:Dropdown({
 })
 
 Tab:Button({
-    Title = "❌ ลบ Waypoint ที่เลือก",
-    Desc = "ลบตำแหน่งที่เลือกจากรายการลบ",
+    Title = "❌ Delete the selected waypoints",
+    Desc = "Delete the selected Waypoints from the delete list.",
     Callback = function()
         for i, wp in pairs(Waypoints) do
             if wp.Name == SelectedWaypointDelete then
@@ -273,8 +265,8 @@ Tab:Button({
                 UpdateDropdowns()
 
                 WindUI:Notify({
-                    Title = "ลบสำเร็จ",
-                    Content = "ลบ Waypoint เรียบร้อยแล้ว",
+                    Title = "Delete successfully",
+                    Content = "Waypoints has been successfully deleted.",
                     Icon = "trash",
                     Duration = 3,
                 })
@@ -283,15 +275,14 @@ Tab:Button({
         end
 
         WindUI:Notify({
-            Title = "ยังไม่ได้เลือกตำแหน่ง",
-            Content = "กรุณาเลือก Waypoint ที่จะลบ",
+            Title = "Waypoints not yet selected",
+            Content = "Please select the waypoints to delete.",
             Icon = "target",
             Duration = 4,
         })
     end
 })
 
--- 🔁 โหลด Waypoints จากไฟล์โดยไม่ใช้ฟังก์ชันแยก
 do
     local placeFolder = "Waypoints/" .. tostring(game.PlaceId)
     local filePath = placeFolder .. "/data.json"
@@ -317,23 +308,23 @@ do
             UpdateDropdowns()
 
             WindUI:Notify({
-                Title = "📥 โหลด Waypoints สำเร็จ",
-                Content = "จำนวน: " .. tostring(#Waypoints),
+                Title = "📥 Waypoints loaded successfully",
+                Content = ": " .. tostring(#Waypoints),
                 Icon = "download",
                 Duration = 3
             })
         else
             WindUI:Notify({
-                Title = "❌ โหลดล้มเหลว",
-                Content = "อ่าน JSON ไม่สำเร็จ",
+                Title = "❌ Load failed",
+                Content = "Failed to read JSON",
                 Icon = "x",
                 Duration = 4
             })
         end
     else
         WindUI:Notify({
-            Title = "โปรดบันทึก Waypoints",
-            Content = "ยังไม่เคยบันทึกตำแหน่งในแมพนี้",
+            Title = "Please save Waypoints",
+            Content = "No Waypoints has been saved on this map yet.",
             Icon = "folder",
             Duration = 3
         })
