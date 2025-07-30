@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HRP = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
@@ -49,6 +50,11 @@ Window:IsResizable(true)
 Window:SetToggleKey(Enum.KeyCode.H)
 
 local Tab = Window:Tab({
+    Title = "Main",
+    Icon = "bird",
+    Locked = false,
+})
+local Tab2 = Window:Tab2({
     Title = "Main",
     Icon = "bird",
     Locked = false,
