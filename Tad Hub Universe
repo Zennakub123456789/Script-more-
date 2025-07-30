@@ -54,6 +54,30 @@ local Tab = Window:Tab({
     Locked = false,
 })
 local Section = Tab:Section({ 
+    Title = "Status:",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
+local placeId = game.PlaceId
+local filePath = "Waypoints/" .. tostring(placeId) .. "/data.json"
+local mapName = game:GetService("MarketplaceService"):GetProductInfo(placeId).Name
+
+local Button
+
+Button = Tab:Button({
+    Title = mapName,
+    Desc = "Loading...",
+    Locked = true,
+})
+
+if isfile(filePath) then
+    Button:SetDesc("This Game Have Waypoints file")
+else
+    Button:SetDesc("This map does not have Waypoints file yet.")
+end
+
+local Section = Tab:Section({ 
     Title = "Setup Waypoints",
     TextXAlignment = "Left",
     TextSize = 17, -- Default Size
