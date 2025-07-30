@@ -355,3 +355,9 @@ do
         })
     end
 end
+
+local Tab = Window:Tab({
+    Title = "Server",
+    Icon = "bird",
+    Locked = false,
+})
