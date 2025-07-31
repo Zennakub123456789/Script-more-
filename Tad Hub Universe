@@ -361,5 +361,51 @@ local Tab2 = Window:Tab({
     Icon = "bird",
     Locked = false,
 })
+local Section = Tab2:Section({ 
+    Title = "Status:",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
 
+Tab:Button({
+    Title = "📋 คัดลอก JobId ปัจจุบัน",
+    Desc = "คัดลอกไปยังคลิปบอร์ด",
+    Callback = function()
+        setclipboard(game.JobId)
 
+        WindUI:Notify({
+            Title = "📋 คัดลอกแล้ว",
+            Content = "JobId ปัจจุบันถูกคัดลอกแล้ว",
+            Icon = "clipboard-copy",
+            Duration = 3,
+        })
+    end
+})
+
+local JobIdInput = ""
+
+Tab:Textbox({
+    Title = "🔤 ใส่ JobId",
+    Placeholder = "วาง JobId ที่นี่...",
+    Callback = function(text)
+        JobIdInput = text
+    end
+})
+
+Tab:Button({
+    Title = "🚀 วาร์ปไปยัง JobId",
+    Desc = "เทเลพอร์ตไปยังเซิร์ฟเวอร์ที่ใส่ไว้",
+    Callback = function()
+        if JobIdInput == "" then
+            WindUI:Notify({
+                Title = "❌ ข้อมูลว่าง",
+                Content = "กรุณาใส่ JobId ก่อน",
+                Icon = "alert-circle",
+                Duration = 3,
+            })
+            return
+        end
+
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, JobIdInput, game:GetService("Players").LocalPlayer)
+    end
+})
