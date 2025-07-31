@@ -94,6 +94,8 @@ local DropdownDelete = nil
 
 local SelectedWaypointDelete = nil
 
+local JobIdInput = ""
+
 local function UpdateDropdowns()
     local names = {}
     for _, wp in pairs(Waypoints) do
@@ -381,8 +383,6 @@ Tab2:Button({
         })
     end
 })
-
-local JobIdInput = ""
 
 Tab2:Textbox({
     Title = "🔤 ใส่ JobId",
