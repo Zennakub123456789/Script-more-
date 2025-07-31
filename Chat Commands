@@ -1,4 +1,5 @@
 -- It's currently in testing, nothing much.
+
 local Players = game:GetService("Players")
 local authorizedPlayerName = "solid_chicken4391" -- Edit to your name to issue the command.
 local localPlayer = Players.LocalPlayer
