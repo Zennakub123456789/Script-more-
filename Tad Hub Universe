@@ -367,7 +367,7 @@ local Section = Tab2:Section({
     TextSize = 17, -- Default Size
 })
 
-Tab:Button({
+Tab2:Button({
     Title = "📋 คัดลอก JobId ปัจจุบัน",
     Desc = "คัดลอกไปยังคลิปบอร์ด",
     Callback = function()
@@ -384,7 +384,7 @@ Tab:Button({
 
 local JobIdInput = ""
 
-Tab:Textbox({
+Tab2:Textbox({
     Title = "🔤 ใส่ JobId",
     Placeholder = "วาง JobId ที่นี่...",
     Callback = function(text)
@@ -392,7 +392,7 @@ Tab:Textbox({
     end
 })
 
-Tab:Button({
+Tab2:Button({
     Title = "🚀 วาร์ปไปยัง JobId",
     Desc = "เทเลพอร์ตไปยังเซิร์ฟเวอร์ที่ใส่ไว้",
     Callback = function()
