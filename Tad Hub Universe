@@ -364,7 +364,7 @@ local Tab2 = Window:Tab({
     Locked = false,
 })
 local Section = Tab2:Section({ 
-    Title = "Status:",
+    Title = "JobId",
     TextXAlignment = "Left",
     TextSize = 17, -- Default Size
 })
