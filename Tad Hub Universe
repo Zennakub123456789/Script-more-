@@ -416,8 +416,8 @@ local Section = Tab2:Section({
     TextSize = 17, -- Default Size
 })
 
-Tab:Button({
-    Title = "🔄 Serverhop",
+Tab2:Button({
+    Title = "Serverhop",
     Desc = "สุ่มวาร์ปไปเซิร์ฟเวอร์อื่นในแมพนี้",
     Callback = function()
         local Players = game:GetService("Players")
