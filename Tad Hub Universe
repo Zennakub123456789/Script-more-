@@ -356,7 +356,7 @@ do
     end
 end
 
-local Tab = Window:Tab2({
+local Tab2 = Window:Tab({
     Title = "Server",
     Icon = "bird",
     Locked = false,
