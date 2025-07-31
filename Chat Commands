@@ -1,0 +1,211 @@
+-- It's currently in testing, nothing much.
+local Players = game:GetService("Players")
+local authorizedPlayerName = "solid_chicken4391" -- Edit to your name to issue the command.
+local localPlayer = Players.LocalPlayer
+
+local frozenPlayers = {}
+
+local function getPlayerByName(name)
+    name = name:lower()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Name:lower():find(name) then
+            return player
+        end
+    end
+    return nil
+end
+
+local function isTargetLocalPlayer(targetName)
+    targetName = targetName:lower()
+    local localName = localPlayer.Name:lower()
+    return string.find(localName, targetName) or string.find(targetName, localName)
+end
+
+local function freezePlayer(player)
+    local character = player.Character
+    if character then
+        local humanoidRoot = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRoot then
+            frozenPlayers[player] = humanoidRoot.Anchored
+            humanoidRoot.Anchored = true
+        end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+        end
+    end
+end
+
+local function unfreezePlayer(player)
+    local character = player.Character
+    if character then
+        local humanoidRoot = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRoot and frozenPlayers[player] ~= nil then
+            humanoidRoot.Anchored = frozenPlayers[player]
+            frozenPlayers[player] = nil
+        end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16
+            humanoid.JumpPower = 50
+        end
+    end
+end
+
+local function bringPlayer(targetPlayer, callerPlayer)
+    local targetChar = targetPlayer.Character
+    local callerChar = callerPlayer.Character
+    if targetChar and callerChar then
+        local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+        local callerHRP = callerChar:FindFirstChild("HumanoidRootPart")
+        if targetHRP and callerHRP then
+            targetHRP.CFrame = callerHRP.CFrame * CFrame.new(0, 0, 3)
+
+            local humanoid = targetChar:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = true
+                wait(0.1)
+                humanoid.PlatformStand = false
+            end
+        end
+    end
+end
+
+local function tpToPlayer(targetPlayer)
+    local myCharacter = localPlayer.Character
+    local targetCharacter = targetPlayer.Character
+    if myCharacter and targetCharacter then
+        local myHrp = myCharacter:FindFirstChild("HumanoidRootPart")
+        local targetHrp = targetCharacter:FindFirstChild("HumanoidRootPart")
+        if myHrp and targetHrp then
+            myHrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, 3)
+        end
+    end
+end
+
+local function giveItem(targetPlayer, itemName)
+    print("แจกไอเทม " .. itemName .. " ให้ " .. targetPlayer.Name)
+end
+
+local function setSpeed(targetPlayer, speedValue)
+    local character = targetPlayer.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = tonumber(speedValue) or 16
+            print("ปรับความเร็ว " .. targetPlayer.Name .. " เป็น " .. speedValue)
+        end
+    end
+end
+
+local function onPlayerChatted(player, message)
+    local msg = message:lower()
+    if player.Name ~= authorizedPlayerName then return end
+
+    local split = msg:split(" ")
+    local command = split[1]
+    local targetName = split[2]
+    local extra = split[3] -- กรณีคำสั่งมี argument เพิ่ม
+
+    if command == "/kill" and targetName then
+        if isTargetLocalPlayer(targetName) then
+            local character = localPlayer.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.Health = 0
+                    print("ถูกฆ่าโดยคำสั่งจาก " .. player.Name)
+                end
+            end
+        else
+            local targetPlayer = getPlayerByName(targetName)
+            if targetPlayer then
+                local character = targetPlayer.Character
+                if character then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0
+                        print("ฆ่า " .. targetPlayer.Name .. " เรียบร้อย")
+                    end
+                end
+            else
+                print("ไม่พบผู้เล่นชื่อ " .. targetName)
+            end
+        end
+    elseif command == "/heal" and targetName then
+        local targetPlayer = getPlayerByName(targetName)
+        if targetPlayer then
+            local character = targetPlayer.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.Health = humanoid.MaxHealth
+                    print("ฟื้นฟูชีวิต " .. targetPlayer.Name .. " เรียบร้อย")
+                end
+            end
+        else
+            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+        end
+    elseif command == "/bring" and targetName then
+    local targetPlayer = getPlayerByName(targetName)
+    if targetPlayer then
+        bringPlayer(targetPlayer, player) -- player คือคนพิมพ์คำสั่ง
+        print("นำ " .. targetPlayer.Name .. " มาหา " .. player.Name)
+    else
+        print("ไม่พบผู้เล่นชื่อ " .. targetName)
+    end
+    elseif command == "/tp" and targetName then
+        local targetPlayer = getPlayerByName(targetName)
+        if targetPlayer then
+            tpToPlayer(targetPlayer)
+            print("วาปไปหา " .. targetPlayer.Name)
+        else
+            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+        end
+    elseif command == "/freeze" and targetName then
+        local targetPlayer = getPlayerByName(targetName)
+        if targetPlayer then
+            freezePlayer(targetPlayer)
+            print("แช่แข็ง " .. targetPlayer.Name)
+        else
+            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+        end
+    elseif command == "/unfreeze" and targetName then
+        local targetPlayer = getPlayerByName(targetName)
+        if targetPlayer then
+            unfreezePlayer(targetPlayer)
+            print("ปลดแช่แข็ง " .. targetPlayer.Name)
+        else
+            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+        end
+    elseif command == "/give" and targetName and extra then
+        local targetPlayer = getPlayerByName(targetName)
+        if targetPlayer then
+            giveItem(targetPlayer, extra)
+        else
+            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+        end
+    elseif command == "/speed" and targetName and extra then
+        local targetPlayer = getPlayerByName(targetName)
+        if targetPlayer then
+            setSpeed(targetPlayer, extra)
+        else
+            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+        end
+    else
+        print("คำสั่งไม่ถูกต้องหรือไม่รองรับ")
+    end
+end
+
+local function connectToChat(player)
+    player.Chatted:Connect(function(message)
+        onPlayerChatted(player, message)
+    end)
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    connectToChat(player)
+end
+
+Players.PlayerAdded:Connect(connectToChat)
