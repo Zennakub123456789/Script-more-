@@ -384,7 +384,7 @@ Tab2:Button({
     end
 })
 
-Tab2:Textbox({
+Tab2:Input({
     Title = "🔤 ใส่ JobId",
     Placeholder = "วาง JobId ที่นี่...",
     Callback = function(text)
