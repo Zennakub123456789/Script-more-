@@ -358,6 +358,12 @@ do
     end
 end
 
+local Section = Tab:Section({ 
+    Title = "Walk Speed",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local WalkSpeedEnabled = false
