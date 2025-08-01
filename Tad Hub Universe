@@ -358,6 +358,61 @@ do
     end
 end
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local WalkSpeedEnabled = false
+local WalkSpeedValue = 16
+local DefaultWalkSpeed = 16
+
+-- เก็บค่า WalkSpeed ดั้งเดิมตอนโหลดตัวละคร
+LocalPlayer.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    DefaultWalkSpeed = humanoid.WalkSpeed
+    if WalkSpeedEnabled then
+        humanoid.WalkSpeed = WalkSpeedValue
+    end
+end)
+
+Tab:Input({
+    Title = "Enter WalkSpeed",
+    Placeholder = "ใส่ค่าความเร็ว เช่น 30",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num > 0 then
+            WalkSpeedValue = num
+
+            -- ถ้าเปิดอยู่ ให้เปลี่ยน WalkSpeed ทันที
+            if WalkSpeedEnabled then
+                local character = LocalPlayer.Character
+                if character then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.WalkSpeed = WalkSpeedValue
+                    end
+                end
+            end
+        end
+    end
+})
+
+Tab:Toggle({
+    Title = "Open/Close WalkSpeed",
+    Desc = "Set WalkSpeed",
+    Icon = "activity",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        WalkSpeedEnabled = state
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = WalkSpeedEnabled and WalkSpeedValue or DefaultWalkSpeed
+            end
+        end
+    end
+})
+
 local Tab2 = Window:Tab({
     Title = "Server",
     Icon = "bird",
@@ -370,14 +425,14 @@ local Section = Tab2:Section({
 })
 
 Tab2:Button({
-    Title = "📋 คัดลอก JobId ปัจจุบัน",
-    Desc = "คัดลอกไปยังคลิปบอร์ด",
+    Title = "📋 Copy JobId",
+    Desc = "It will Copy JobId this Server to Clipboard",
     Callback = function()
         setclipboard(game.JobId)
 
         WindUI:Notify({
-            Title = "📋 คัดลอกแล้ว",
-            Content = "JobId ปัจจุบันถูกคัดลอกแล้ว",
+            Title = "📋 succeed!",
+            Content = "JobId copied",
             Icon = "clipboard-copy",
             Duration = 3,
         })
@@ -385,21 +440,21 @@ Tab2:Button({
 })
 
 Tab2:Input({
-    Title = "🔤 ใส่ JobId",
-    Placeholder = "วาง JobId ที่นี่...",
+    Title = "Put JobId",
+    Placeholder = "Place JobId here...",
     Callback = function(text)
         JobIdInput = text
     end
 })
 
 Tab2:Button({
-    Title = "🚀 วาร์ปไปยัง JobId",
-    Desc = "เทเลพอร์ตไปยังเซิร์ฟเวอร์ที่ใส่ไว้",
+    Title = "🚀 teleport to JobId",
+    Desc = "Teleport to the server.",
     Callback = function()
         if JobIdInput == "" then
             WindUI:Notify({
-                Title = "❌ ข้อมูลว่าง",
-                Content = "กรุณาใส่ JobId ก่อน",
+                Title = "❌ Failed",
+                Content = "Please enter your JobId first.",
                 Icon = "alert-circle",
                 Duration = 3,
             })
@@ -418,7 +473,7 @@ local Section = Tab2:Section({
 
 Tab2:Button({
     Title = "Serverhop",
-    Desc = "สุ่มวาร์ปไปเซิร์ฟเวอร์อื่นในแมพนี้",
+    Desc = "It will go to the others Servers",
     Callback = function()
         local Players = game:GetService("Players")
         local TeleportService = game:GetService("TeleportService")
@@ -482,7 +537,7 @@ Tab2:Button({
 
 Tab2:Button({
     Title = "Join Low Players",
-    Desc = "สุ่มวาร์ปไปเซิร์ฟเวอร์ที่คนน้อยที่สุด",
+    Desc = "It will go to lower Player in server",
     Callback = function()
         local Players = game:GetService("Players")
         local TeleportService = game:GetService("TeleportService")
@@ -535,10 +590,10 @@ Tab2:Button({
             print("✅ เจอแล้ว! คนในเซิร์ฟนี้มีแค่: " .. bestServer.playing)
             TeleportService:TeleportToPlaceInstance(placeId, bestServer.id, player)
         else
-            warn("❌ ไม่พบ Server ที่ยังไม่เต็มเลย")
+            warn("❌ No servers found that are not full yet.")
             WindUI:Notify({
-                Title = "❌ ไม่พบ Server",
-                Content = "ยังไม่มี Server ที่ว่างเลยนะ 😓",
+                Title = "❌ Serve not found",
+                Content = "Failed to find server",
                 Icon = "user-x",
                 Duration = 4,
             })
@@ -548,7 +603,7 @@ Tab2:Button({
 
 Tab2:Button({
     Title = "Rejoin",
-    Desc = "เข้ากลับเซิร์ฟเวอร์เดิมที่คุณอยู่",
+    Desc = "It will Rejoin to your server",
     Callback = function()
         local TeleportService = game:GetService("TeleportService")
         local Players = game:GetService("Players")
@@ -558,59 +613,3 @@ Tab2:Button({
     end
 })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local WalkSpeedEnabled = false
-local WalkSpeedValue = 16
-local DefaultWalkSpeed = 16
-
--- เก็บค่า WalkSpeed ดั้งเดิมตอนโหลดตัวละคร
-LocalPlayer.CharacterAdded:Connect(function(char)
-    local humanoid = char:WaitForChild("Humanoid")
-    DefaultWalkSpeed = humanoid.WalkSpeed
-    if WalkSpeedEnabled then
-        humanoid.WalkSpeed = WalkSpeedValue
-    end
-end)
-
--- ช่อง Input ใส่ความเร็ว
-Tab:Input({
-    Title = "🚀 ใส่ WalkSpeed",
-    Placeholder = "ใส่ค่าความเร็ว เช่น 30",
-    Callback = function(text)
-        local num = tonumber(text)
-        if num and num > 0 then
-            WalkSpeedValue = num
-
-            -- ถ้าเปิดอยู่ ให้เปลี่ยน WalkSpeed ทันที
-            if WalkSpeedEnabled then
-                local character = LocalPlayer.Character
-                if character then
-                    local humanoid = character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid.WalkSpeed = WalkSpeedValue
-                    end
-                end
-            end
-        end
-    end
-})
-
--- ปุ่มเปิด/ปิด WalkSpeed
-Tab:Toggle({
-    Title = "⚡ เปิด/ปิด WalkSpeed",
-    Desc = "ปรับความเร็วของผู้เล่น",
-    Icon = "activity",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        WalkSpeedEnabled = state
-        local character = LocalPlayer.Character
-        if character then
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = WalkSpeedEnabled and WalkSpeedValue or DefaultWalkSpeed
-            end
-        end
-    end
-})
