@@ -557,3 +557,60 @@ Tab2:Button({
         TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
     end
 })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local WalkSpeedEnabled = false
+local WalkSpeedValue = 16
+local DefaultWalkSpeed = 16
+
+-- เก็บค่า WalkSpeed ดั้งเดิมตอนโหลดตัวละคร
+LocalPlayer.CharacterAdded:Connect(function(char)
+    local humanoid = char:WaitForChild("Humanoid")
+    DefaultWalkSpeed = humanoid.WalkSpeed
+    if WalkSpeedEnabled then
+        humanoid.WalkSpeed = WalkSpeedValue
+    end
+end)
+
+-- ช่อง Input ใส่ความเร็ว
+Tab:Input({
+    Title = "🚀 ใส่ WalkSpeed",
+    Placeholder = "ใส่ค่าความเร็ว เช่น 30",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num > 0 then
+            WalkSpeedValue = num
+
+            -- ถ้าเปิดอยู่ ให้เปลี่ยน WalkSpeed ทันที
+            if WalkSpeedEnabled then
+                local character = LocalPlayer.Character
+                if character then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.WalkSpeed = WalkSpeedValue
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- ปุ่มเปิด/ปิด WalkSpeed
+Tab:Toggle({
+    Title = "⚡ เปิด/ปิด WalkSpeed",
+    Desc = "ปรับความเร็วของผู้เล่น",
+    Icon = "activity",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        WalkSpeedEnabled = state
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = WalkSpeedEnabled and WalkSpeedValue or DefaultWalkSpeed
+            end
+        end
+    end
+})
