@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 
 local player = Players.LocalPlayer
-local message = "Script Made by Tad"
+local message = "Script Made by TadHub"
 
 if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
     local channel = TextChatService:FindFirstChild("TextChannels"):FindFirstChild("RBXGeneral")
