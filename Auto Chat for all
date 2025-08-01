@@ -1,0 +1,22 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+
+local player = Players.LocalPlayer
+local message = "Script Made by Tad"
+
+if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+    local channel = TextChatService:FindFirstChild("TextChannels"):FindFirstChild("RBXGeneral")
+    if channel then
+        channel:SendAsync(message)
+    else
+        warn("ไม่พบช่อง RBXGeneral ในระบบแชทใหม่")
+    end
+else
+    local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+    if chatEvent and chatEvent:FindFirstChild("SayMessageRequest") then
+        chatEvent.SayMessageRequest:FireServer(message, "All")
+    else
+        warn("ไม่พบ SayMessageRequest สำหรับระบบแชทเก่า")
+    end
+end
