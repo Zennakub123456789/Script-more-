@@ -1,0 +1,285 @@
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+WindUI:SetNotificationLower(true)
+
+local Window = WindUI:CreateWindow({
+    Title = "Tad Hub | Grow a Graden | 0.0.1",
+    Icon = "door-open",
+    Author = "By Tad Hub",
+    Folder = "TadHub",
+    Size = UDim2.fromOffset(550, 350),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    Background = "", -- rbxassetid only
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+        Anonymous = true,
+        Callback = function()
+            print("clicked")
+        end,
+    },
+})
+
+Window:EditOpenButton({
+    Title = "Open Example UI",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new( -- gradient
+        Color3.fromHex("FF0F7B"), 
+        Color3.fromHex("F89B29")
+    ),
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+
+Window:IsResizable(true)
+
+Window:SetToggleKey(Enum.KeyCode.H)
+
+local Tab = Window:Tab({
+    Title = "Main",
+    Icon = "bird",
+    Locked = false,
+})
+local Section = Tab:Section({ 
+    Title = "Main",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local localPlayer = Players.LocalPlayer
+local petsFolder = workspace:WaitForChild("PetsPhysical")
+
+-- สร้างโฟลเดอร์ PetsTeam ถ้ายังไม่มี
+if not isfolder("PetsTeam") then
+    makefolder("PetsTeam")
+end
+
+-- ฟังก์ชันดึงชื่อทีมจากไฟล์ JSON ทั้งหมด
+local function getTeamNames()
+    local teams = {}
+    for _, file in ipairs(listfiles("PetsTeam")) do
+        local name = file:match("PetsTeam/(.+)%.json")
+        if name then
+            table.insert(teams, name)
+        end
+    end
+    return teams
+end
+
+-- ตัวแปรหลัก
+local teamName = ""
+local selectedTeam = ""
+local teamNames = getTeamNames()
+
+-- ช่องใส่ชื่อทีม
+Tab:Input({
+    Title = "ตั้งชื่อทีม",
+    Callback = function(text)
+        teamName = text
+    end
+})
+
+local Dropdown = Tab:Dropdown({
+    Title = "เลือกทีม",
+    Values = teamNames,
+    Callback = function(option)
+        selectedTeam = option
+        print("เลือกทีม:", selectedTeam)
+    end
+})
+
+Tab:Button({
+    Title = "บันทึกทีม",
+    Callback = function()
+        if teamName == "" then
+            warn("⚠️ กรุณาตั้งชื่อทีมก่อนบันทึก")
+            return
+        end
+
+        local uuids = {}
+        for _, petMover in ipairs(petsFolder:GetChildren()) do
+            if petMover.Name == "PetMover" then
+                local owner = petMover:GetAttribute("OWNER")
+                local uuid = petMover:GetAttribute("UUID")
+
+                if owner == localPlayer.Name and uuid then
+                    table.insert(uuids, uuid)
+                end
+            end
+        end
+
+        if #uuids == 0 then
+            warn("⛔ ไม่พบสัตว์เลี้ยงของคุณในสวน")
+            return
+        end
+
+        local data = {
+            uuids = uuids
+        }
+        local jsonData = HttpService:JSONEncode(data)
+        writefile("PetsTeam/" .. teamName .. ".json", jsonData)
+
+        print("✅ บันทึกทีม '" .. teamName .. "' แล้ว")
+
+        -- เพิ่มทีมใน Dropdown ถ้ายังไม่มี
+        local found = false
+        for _, name in ipairs(teamNames) do
+            if name == teamName then
+                found = true
+                break
+            end
+        end
+        if not found then
+            table.insert(teamNames, teamName)
+            Dropdown:Refresh(teamNames)
+        end
+    end
+})
+
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local petsServiceRemote = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("PetsService")
+local localPlayer = game:GetService("Players").LocalPlayer
+local petsFolder = workspace:WaitForChild("PetsPhysical")
+
+Tab:Button({
+    Title = "โหลดทีม: Unequip แล้ว Equip ใหม่",
+    Callback = function()
+        if selectedTeam == "" or not selectedTeam then
+            warn("⚠️ กรุณาเลือกทีมก่อนโหลด")
+            return
+        end
+
+        -- 1. Unequip สัตว์เลี้ยงในสวนทั้งหมด
+        local unequipUUIDs = {}
+        for _, petMover in ipairs(petsFolder:GetChildren()) do
+            if petMover.Name == "PetMover" then
+                local owner = petMover:GetAttribute("OWNER")
+                local uuid = petMover:GetAttribute("UUID")
+                if owner == localPlayer.Name and uuid then
+                    table.insert(unequipUUIDs, uuid)
+                end
+            end
+        end
+
+        if #unequipUUIDs == 0 then
+            warn("⛔ ไม่พบสัตว์เลี้ยงในสวนของคุณตอนนี้")
+            return
+        end
+
+        for _, uuid in ipairs(unequipUUIDs) do
+            local args = {
+                [1] = "UnequipPet",
+                [2] = uuid
+            }
+            petsServiceRemote:FireServer(unpack(args))
+            print("✅ สั่ง Unequip UUID:", uuid)
+            wait(0.1)
+        end
+
+        -- 2. โหลด JSON ทีม
+        local success, jsonData = pcall(function()
+            return readfile("PetsTeam/" .. selectedTeam .. ".json")
+        end)
+
+        if not success then
+            warn("❌ ไม่พบไฟล์ทีม: " .. selectedTeam)
+            return
+        end
+
+        local data = HttpService:JSONDecode(jsonData)
+        local equipUUIDs = data.uuids or {}
+
+        if #equipUUIDs == 0 then
+            warn("⚠️ ทีมนี้ไม่มี UUID สัตว์เลี้ยง")
+            return
+        end
+
+        -- 3. Equip ทีละ UUID ด้วยตำแหน่งและองศาที่กำหนด
+        for _, uuid in ipairs(equipUUIDs) do
+            local args = {
+                [1] = "EquipPet",
+                [2] = uuid,
+                [3] = CFrame.new(18.795989990234375, 0, -74.50503540039062) * CFrame.Angles(0, 0, 0)
+            }
+            petsServiceRemote:FireServer(unpack(args))
+            print("✅ สั่ง Equip UUID:", uuid)
+            wait(0.1)
+        end
+
+        print("🎉 โหลดทีม '" .. selectedTeam .. "' เสร็จสมบูรณ์")
+    end
+})
+
+local selectedDeleteTeam = ""
+
+-- Dropdown เลือกทีมที่จะลบ
+local DeleteDropdown = Tab:Dropdown({
+    Title = "เลือกทีมที่จะลบ",
+    Values = teamNames,
+    Callback = function(selected)
+        selectedDeleteTeam = selected
+        print("🗑️ เตรียมลบทีม: " .. selected)
+    end
+})
+
+Tab:Button({
+    Title = "ลบทีม",
+    Callback = function()
+        if selectedDeleteTeam == "" then
+            WindUI:Notify({
+                Title = "⚠️ กรุณาเลือกทีม",
+                Content = "คุณต้องเลือกทีมก่อนถึงจะลบได้",
+                Icon = "alert",
+                Duration = 3
+            })
+            return
+        end
+
+        local filePath = "PetsTeam/" .. selectedDeleteTeam .. ".json"
+
+        if isfile(filePath) then
+            delfile(filePath)
+            print("✅ ลบไฟล์สำเร็จ: " .. selectedDeleteTeam)
+
+            -- ลบชื่อทีมออกจากตารางและรีเฟรช Dropdown
+            for i, name in ipairs(teamNames) do
+                if name == selectedDeleteTeam then
+                    table.remove(teamNames, i)
+                    break
+                end
+            end
+            Dropdown:Refresh(teamNames)
+            DeleteDropdown:Refresh(teamNames)
+
+            WindUI:Notify({
+                Title = "🗑️ ลบทีมสำเร็จ",
+                Content = "ทีม '" .. selectedDeleteTeam .. "' ถูกลบเรียบร้อยแล้ว",
+                Icon = "trash",
+                Duration = 4
+            })
+
+            selectedDeleteTeam = ""
+        else
+            WindUI:Notify({
+                Title = "❌ ลบทีมล้มเหลว",
+                Content = "ไม่พบไฟล์: " .. filePath,
+                Icon = "folder-x",
+                Duration = 4
+            })
+        end
+    end
+})
