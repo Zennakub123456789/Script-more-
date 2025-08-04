@@ -24,7 +24,7 @@ local Window = WindUI:CreateWindow({
     ScrollBarEnabled = false,
     User = {
         Enabled = true,
-        Anonymous = true,
+        Anonymous = false,
         Callback = function()
             print("clicked")
         end,
