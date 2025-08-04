@@ -79,12 +79,13 @@ local function getTeamNames()
     return teams
 end
 
+local LoadTeamDropdown
+local DeleteDropdown
+
 -- ตัวแปรหลัก
 local teamName = ""
 local selectedTeam = ""
 local teamNames = getTeamNames()
-local LoadTeamDropdown
-local DeleteDropdown
 
 -- ช่องใส่ชื่อทีม
 local PetTeamInput = Tab:Input({
