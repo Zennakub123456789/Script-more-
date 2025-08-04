@@ -1,3 +1,4 @@
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -135,16 +136,10 @@ local SaveTeamButton = Tab:Button({
             end
         end
         if not found then
-    table.insert(teamNames, teamName)
-    
-    -- รีเฟรช Dropdown ถ้ามี
-    if LoadTeamDropdown then
-        LoadTeamDropdown:Refresh(teamNames)
+            table.insert(teamNames, teamName)
+            LoadTeamDropdown:Refresh(teamNames)
+        end
     end
-    if DeleteDropdown then
-        DeleteDropdown:Refresh(teamNames)
-    end
-end
 })
 
 local Section = Tab:Section({ 
