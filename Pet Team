@@ -134,7 +134,7 @@ local SaveTeamButton = Tab:Button({
             end
         end
         if not found then
-            table.insert(teamNames, teamName)
+            table.insert(teamNames, teamName, allTeamNames)
             LoadTeamDropdown:Refresh(allTeamNames)
         end
     end
