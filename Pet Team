@@ -60,7 +60,6 @@ local Section = Tab:Section({
     TextSize = 17, -- Default Size
 })
 
--- 🔁 ตัวแปรหลัก
 local teamNames = {}
 if isfolder("PetsTeam") then
     for _, file in ipairs(listfiles("PetsTeam")) do
@@ -71,7 +70,6 @@ if isfolder("PetsTeam") then
     end
 end
 
--- 🔧 ตัวแปร UI (ต้องกำหนดไว้ก่อน)
 local LoadTeamDropdown
 local DeleteDropdown
 
@@ -79,28 +77,25 @@ local teamName = ""
 local selectedTeam = ""
 local selectedDeleteTeam = ""
 
--- 1️⃣ ปุ่มใส่ชื่อทีม
 PetnameInput = Tab:Input({
-    Title = "📝 ตั้งชื่อทีม",
+    Title = "Set Pet Team Name",
     Callback = function(text)
         teamName = text
     end
 })
 
--- 2️⃣ ปุ่มบันทึกทีม
 local SaveTeamButton = Tab:Button({
-    Title = "💾 บันทึกทีม",
+    Title = "Save Pet Team",
     Callback = function()
         if teamName == "" then
             return WindUI:Notify({
-                Title = "⚠️ ชื่อทีมว่าง",
-                Content = "กรุณากรอกชื่อทีมก่อนบันทึก",
+                Title = "⚠️ Pet Team name is empty",
+                Content = "Please enter the team name before saving.",
                 Icon = "alert",
                 Duration = 3
             })
         end
 
-        -- เก็บ UUID จากสวน
         local uuids = {}
         for _, petMover in ipairs(petsFolder:GetChildren()) do
             if petMover.Name == "PetMover" then
@@ -114,14 +109,13 @@ local SaveTeamButton = Tab:Button({
 
         if #uuids == 0 then
             return WindUI:Notify({
-                Title = "❌ ไม่พบสัตว์เลี้ยง",
-                Content = "ไม่มีสัตว์เลี้ยงของคุณในสวนตอนนี้",
+                Title = "❌ No pets found",
+                Content = "No pets in your garden right now.",
                 Icon = "cat",
                 Duration = 3
             })
         end
 
-        -- เขียนไฟล์
         local data = { uuids = uuids }
         local json = HttpService:JSONEncode(data)
         if not isfolder("PetsTeam") then
@@ -129,7 +123,6 @@ local SaveTeamButton = Tab:Button({
         end
         writefile("PetsTeam/" .. teamName .. ".json", json)
 
-        -- เพิ่มชื่อทีมใน Dropdown ถ้ายังไม่มี
         local found = false
         for _, name in ipairs(teamNames) do
             if name == teamName then
@@ -142,7 +135,6 @@ local SaveTeamButton = Tab:Button({
             table.insert(teamNames, teamName)
         end
 
-        -- รีเฟรช Dropdown ทั้งคู่
         if LoadTeamDropdown then
             LoadTeamDropdown:Refresh(teamNames)
         end
@@ -152,31 +144,35 @@ local SaveTeamButton = Tab:Button({
 
         WindUI:Notify({
             Title = "✅ บันทึกทีมสำเร็จ",
-            Content = "ทีม '" .. teamName .. "' ถูกบันทึกแล้ว",
+            Content = "Pet Team '" .. teamName .. "' It has been Save",
             Icon = "save",
             Duration = 3
         })
     end
 })
 
--- 3️⃣ Dropdown เลือกทีมไว้โหลด
+local Section = Tab:Section({ 
+    Title = "Load Pet Team",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
 LoadTeamDropdown = Tab:Dropdown({
-    Title = "📂 เลือกทีม",
+    Title = "Choose a Pet team",
     Values = teamNames,
     Callback = function(option)
         selectedTeam = option
-        print("เลือกทีม:", selectedTeam)
+        print("Choose a Pet Team:", selectedTeam)
     end
 })
 
--- 4️⃣ ปุ่มโหลดทีม (Unequip แล้ว Equip)
 LoadTeam = Tab:Button({
-    Title = "📥 โหลดทีม (Unequip ก่อน)",
+    Title = "Load Pet Team",
     Callback = function()
         if selectedTeam == "" then
             return WindUI:Notify({
-                Title = "⚠️ ไม่ได้เลือกทีม",
-                Content = "กรุณาเลือกทีมก่อนโหลด",
+                Title = "⚠️ Didn't choose a team",
+                Content = "Please select a Pet team before loading.",
                 Icon = "alert",
                 Duration = 3
             })
@@ -194,15 +190,14 @@ LoadTeam = Tab:Button({
             end
         end
 
-        -- โหลด UUID จากไฟล์
         local success, result = pcall(function()
             return readfile("PetsTeam/" .. selectedTeam .. ".json")
         end)
 
         if not success then
             return WindUI:Notify({
-                Title = "❌ โหลดไม่สำเร็จ",
-                Content = "ไม่พบไฟล์: " .. selectedTeam,
+                Title = "❌ Load failed",
+                Content = "File not found: " .. selectedTeam,
                 Icon = "folder-x",
                 Duration = 3
             })
@@ -215,17 +210,22 @@ LoadTeam = Tab:Button({
         end
 
         WindUI:Notify({
-            Title = "✅ โหลดทีมสำเร็จ",
-            Content = "ทีม '" .. selectedTeam .. "' ถูกโหลดแล้ว",
+            Title = "✅ Pet Team loaded successfully",
+            Content = "Pet Team '" .. selectedTeam .. "' ถูกโหลดแล้ว",
             Icon = "download",
             Duration = 3
         })
     end
 })
 
--- 5️⃣ Dropdown เลือกทีมที่จะลบ
+local Section = Tab:Section({ 
+    Title = "Delete Pet Team",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
 DeleteDropdown = Tab:Dropdown({
-    Title = "🗑️ เลือกทีมที่จะลบ",
+    Title = "Select the Pet team to delete.",
     Values = teamNames,
     Callback = function(selected)
         selectedDeleteTeam = selected
@@ -233,12 +233,12 @@ DeleteDropdown = Tab:Dropdown({
 })
 
 DeleteButton = Tab:Button({
-    Title = "❌ ลบทีม",
+    Title = "Delete Pet Team",
     Callback = function()
         if selectedDeleteTeam == "" then
             return WindUI:Notify({
-                Title = "⚠️ ยังไม่ได้เลือกทีม",
-                Content = "เลือกทีมก่อนจึงจะลบได้",
+                Title = "⚠️ Haven't chosen a pet team yet.",
+                Content = "Select a pet team before deleting.",
                 Icon = "alert",
                 Duration = 3
             })
@@ -262,7 +262,7 @@ DeleteButton = Tab:Button({
 
             WindUI:Notify({
                 Title = "🗑️ Successfully deleted the team.",
-                Content = "ลบไฟล์ทีมเรียบร้อยแล้ว",
+                Content = "Pet Team file has been deleted successfully.",
                 Icon = "trash",
                 Duration = 3
             })
