@@ -261,15 +261,15 @@ DeleteButton = Tab:Button({
             selectedDeleteTeam = ""
 
             WindUI:Notify({
-                Title = "🗑️ ลบทีมสำเร็จ",
+                Title = "🗑️ Successfully deleted the team.",
                 Content = "ลบไฟล์ทีมเรียบร้อยแล้ว",
                 Icon = "trash",
                 Duration = 3
             })
         else
             WindUI:Notify({
-                Title = "❌ ไม่พบไฟล์",
-                Content = "ไม่สามารถลบได้: ไม่พบไฟล์",
+                Title = "❌ File not found",
+                Content = "Unable to delete: File not found.",
                 Icon = "folder-x",
                 Duration = 3
             })
