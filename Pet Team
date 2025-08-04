@@ -85,23 +85,14 @@ local selectedTeam = ""
 local teamNames = getTeamNames()
 
 -- ช่องใส่ชื่อทีม
-Tab:Input({
+local PetTeamInput = Tab:Input({
     Title = "ตั้งชื่อทีม",
     Callback = function(text)
         teamName = text
     end
 })
 
-local Dropdown = Tab:Dropdown({
-    Title = "เลือกทีม",
-    Values = teamNames,
-    Callback = function(option)
-        selectedTeam = option
-        print("เลือกทีม:", selectedTeam)
-    end
-})
-
-Tab:Button({
+local SaveTeamButton = Tab:Button({
     Title = "บันทึกทีม",
     Callback = function()
         if teamName == "" then
@@ -144,8 +135,23 @@ Tab:Button({
         end
         if not found then
             table.insert(teamNames, teamName)
-            Dropdown:Refresh(teamNames)
+            LoadTeamDropdown:Refresh(teamNames)
         end
+    end
+})
+
+local Section = Tab:Section({ 
+    Title = "Load Pet Team",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
+local LoadTeamDropdown = Tab:Dropdown({
+    Title = "เลือกทีม",
+    Values = teamNames,
+    Callback = function(option)
+        selectedTeam = option
+        print("เลือกทีม:", selectedTeam)
     end
 })
 
@@ -155,8 +161,8 @@ local petsServiceRemote = ReplicatedStorage:WaitForChild("GameEvents"):WaitForCh
 local localPlayer = game:GetService("Players").LocalPlayer
 local petsFolder = workspace:WaitForChild("PetsPhysical")
 
-Tab:Button({
-    Title = "โหลดทีม: Unequip แล้ว Equip ใหม่",
+local LoadTeamButton = Tab:Button({
+    Title = "โหลดทีม",
     Callback = function()
         if selectedTeam == "" or not selectedTeam then
             warn("⚠️ กรุณาเลือกทีมก่อนโหลด")
@@ -224,6 +230,12 @@ Tab:Button({
     end
 })
 
+local Section = Tab:Section({ 
+    Title = "Delete Pet Team",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
 local selectedDeleteTeam = ""
 
 -- Dropdown เลือกทีมที่จะลบ
@@ -236,7 +248,29 @@ local DeleteDropdown = Tab:Dropdown({
     end
 })
 
-Tab:Button({
+local RefreshDeleteButton = Tab:Button({
+    Title = "รีเฟรชทีมใน Dropdown ลบทีม",
+    Callback = function()
+        -- โหลดชื่อทีมจากโฟลเดอร์ PetsTeam
+        local newTeamNames = {}
+        if isfolder("PetsTeam") then
+            for _, file in ipairs(listfiles("PetsTeam")) do
+                local name = file:match("PetsTeam/(.+)%.json")
+                if name then
+                    table.insert(newTeamNames, name)
+                end
+            end
+        end
+
+        -- อัปเดตตารางชื่อทีมและรีเฟรช Dropdown
+        deleteTeamNames = newTeamNames
+        DeleteDropdown:Refresh(deleteTeamNames)
+
+        print("🔄 รีเฟรช Dropdown ลบทีมเรียบร้อยแล้ว")
+    end
+})
+
+local DeleteButton = Tab:Button({
     Title = "ลบทีม",
     Callback = function()
         if selectedDeleteTeam == "" then
