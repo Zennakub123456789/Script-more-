@@ -134,8 +134,8 @@ local SaveTeamButton = Tab:Button({
             end
         end
         if not found then
-            table.insert(teamNames, teamName, allTeamNames)
-            LoadTeamDropdown:Refresh(allTeamNames)
+            table.insert(teamNames, teamName)
+            LoadTeamDropdown:Refresh(TeamNames)
         end
     end
 })
@@ -296,8 +296,8 @@ local DeleteButton = Tab:Button({
                     break
                 end
             end
-            LoadTeamDropdown:Refresh(allTeamNames)
-            DeleteDropdown:Refresh(allTeamNames)
+            LoadTeamDropdown:Refresh(TeamNames)
+            DeleteDropdown:Refresh(TeamNames)
 
             WindUI:Notify({
                 Title = "🗑️ ลบทีมสำเร็จ",
