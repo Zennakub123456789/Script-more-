@@ -10,7 +10,7 @@ WindUI:SetNotificationLower(true)
 
 local Window = WindUI:CreateWindow({
     Title = "Tad Hub | Grow a Graden | 0.0.1",
-    Icon = "door-open",
+    Icon = "https://raw.githubusercontent.com/Zennakub123456789/picture/main/TadHub-Icon.png",
     Author = "By Tad Hub",
     Folder = "TadHub",
     Size = UDim2.fromOffset(550, 350),
@@ -18,7 +18,7 @@ local Window = WindUI:CreateWindow({
     Theme = "Dark",
     Resizable = true,
     SideBarWidth = 200,
-    Background = "rbxassetid://139773814737461", -- rbxassetid only
+    Background = "rbxassetid://79580289236720", -- rbxassetid only
     BackgroundImageTransparency = 0.42,
     HideSearchBar = true,
     ScrollBarEnabled = false,
