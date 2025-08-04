@@ -83,6 +83,8 @@ end
 local teamName = ""
 local selectedTeam = ""
 local teamNames = getTeamNames()
+local LoadTeamDropdown
+local DeleteDropdown
 
 -- ช่องใส่ชื่อทีม
 local PetTeamInput = Tab:Input({
@@ -134,10 +136,16 @@ local SaveTeamButton = Tab:Button({
             end
         end
         if not found then
-            table.insert(teamNames, teamName)
-            LoadTeamDropdown:Refresh(TeamNames)
-        end
+    table.insert(teamNames, teamName)
+    
+    -- รีเฟรช Dropdown ถ้ามี
+    if LoadTeamDropdown then
+        LoadTeamDropdown:Refresh(teamNames)
     end
+    if DeleteDropdown then
+        DeleteDropdown:Refresh(teamNames)
+    end
+end
 })
 
 local Section = Tab:Section({ 
