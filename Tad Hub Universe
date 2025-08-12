@@ -3,6 +3,10 @@ local LocalPlayer = Players.LocalPlayer
 local HRP = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
@@ -619,3 +623,150 @@ Tab2:Button({
     end
 })
 
+local Tab3 = Window:Tab({
+    Title = "Chat",
+    Icon = "Chat",
+    Locked = false,
+})
+local Section = Tab3:Section({ 
+    Title = "Auto Chat With Players",
+    TextXAlignment = "Left",
+    TextSize = 17, -- Default Size
+})
+
+local targetPlayerName = ""
+local chatEnabled = false -- เปิด/ปิด ตาม toggle ปกติ
+local hotkeyControlEnabled = false -- เปิด/ปิดตามปุ่ม F
+local hotkeyActive = false -- สถานะจริงที่ใช้ใน hotkey mode
+
+local connectedPlayers = {}
+
+local statusLabel -- ตัวแสดงสถานะด้านขวาบน (จะสร้างตอนเปิด hotkeyControlEnabled)
+
+-- ฟังก์ชันส่งข้อความ
+local function sendMessage(msg)
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        local channels = TextChatService:FindFirstChild("TextChannels")
+        if channels then
+            local channel = channels:FindFirstChild("RBXGeneral")
+            if channel then
+                channel:SendAsync(msg)
+            else
+                warn("ไม่พบช่อง RBXGeneral ในระบบแชทใหม่")
+            end
+        else
+            warn("ไม่พบ TextChannels ใน TextChatService")
+        end
+    else
+        local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if chatEvent and chatEvent:FindFirstChild("SayMessageRequest") then
+            chatEvent.SayMessageRequest:FireServer(msg, "All")
+        else
+            warn("ไม่พบ SayMessageRequest สำหรับระบบแชทเก่า")
+        end
+    end
+end
+
+local function onPlayerChatted(player, msg)
+    local enabledNow = chatEnabled
+    if hotkeyControlEnabled then
+        enabledNow = hotkeyActive
+    end
+
+    if enabledNow and player.Name == targetPlayerName then
+        sendMessage(msg)
+    end
+end
+
+local function connectPlayer(player)
+    if connectedPlayers[player.UserId] then return end
+    connectedPlayers[player.UserId] = true
+    player.Chatted:Connect(function(msg)
+        onPlayerChatted(player, msg)
+    end)
+end
+
+for _, player in pairs(Players:GetPlayers()) do
+    connectPlayer(player)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    connectPlayer(player)
+end)
+
+-- สร้าง label แสดงสถานะที่ขวาบนหน้าจอ
+local function createStatusLabel()
+    if statusLabel then statusLabel:Destroy() end
+    statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "ChatFollowStatusLabel"
+    statusLabel.AnchorPoint = Vector2.new(1, 0)
+    statusLabel.Position = UDim2.new(1, -10, 0, 10)
+    statusLabel.Size = UDim2.new(0, 150, 0, 30)
+    statusLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    statusLabel.BackgroundTransparency = 0.3
+    statusLabel.TextColor3 = Color3.new(1,1,1)
+    statusLabel.TextStrokeColor3 = Color3.new(0,0,0)
+    statusLabel.TextStrokeTransparency = 0.7
+    statusLabel.Font = Enum.Font.SourceSansBold
+    statusLabel.TextSize = 18
+    statusLabel.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+    statusLabel.Text = "สถานะ: ปิด"
+end
+
+local function updateStatusLabel()
+    if not statusLabel then return end
+    local statusText = hotkeyActive and "สถานะ: เปิด" or "สถานะ: ปิด"
+    statusLabel.Text = statusText
+end
+
+-- สร้างสถานะตอนเริ่ม (ซ่อนก่อน)
+createStatusLabel()
+
+-- GUI: ช่องกรอกชื่อผู้เล่น
+Tab3:Input({
+    Title = "Target Player Name",
+    Placeholder = "ใส่ชื่อผู้เล่นที่ต้องการ",
+    Callback = function(text)
+        targetPlayerName = text
+    end,
+})
+
+-- GUI: Toggle เปิด/ปิดระบบตามพิมพ์ แบบปกติ
+Tab3:Toggle({
+    Title = "Enable Chat Follow (Toggle)",
+    Default = false,
+    Callback = function(state)
+        chatEnabled = state
+        -- ถ้าเปิด toggle ปกติ ให้ปิด hotkey mode อัตโนมัติ เพื่อไม่ให้ซ้อนกัน
+        if state and hotkeyControlEnabled then
+            hotkeyControlEnabled = false
+            hotkeyActive = false
+            updateStatusLabel()
+        end
+    end,
+})
+
+-- GUI: Toggle เปิด/ปิดระบบตามพิมพ์แบบกดปุ่ม F
+Tab3:Toggle({
+    Title = "Enable Chat Follow (Hotkey F)",
+    Default = false,
+    Callback = function(state)
+        hotkeyControlEnabled = state
+        if state then
+            hotkeyActive = false -- เริ่มปิดก่อน
+            updateStatusLabel()
+        else
+            hotkeyActive = false
+            updateStatusLabel()
+        end
+    end,
+})
+
+-- ฟัง event กดปุ่ม F เพื่อสลับสถานะ hotkeyActive
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if hotkeyControlEnabled and input.KeyCode == Enum.KeyCode.F then
+        hotkeyActive = not hotkeyActive
+        updateStatusLabel()
+    end
+end)
