@@ -138,6 +138,7 @@ local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 44)
 titleBar.BackgroundColor3 = Color3.fromRGB(255,255,255)
+titleBar.Parent = win
 corner(titleBar, 18)
 stroke(titleBar, 1, Color3.fromRGB(220,220,220))
 
