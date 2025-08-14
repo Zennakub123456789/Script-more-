@@ -127,8 +127,6 @@ win.Size = UDim2.fromOffset(420, 460)
 win.Position = getgenv().PrettyList_Pos
 win.Visible = false
 win.BackgroundColor3 = Color3.fromRGB(245,245,245)
-win.Active = true
-win.Draggable = true
 win.Parent = sg
 corner(win, 18)
 stroke(win, 1.6, Color3.fromRGB(0,0,0))
@@ -139,8 +137,6 @@ local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 44)
 titleBar.BackgroundColor3 = Color3.fromRGB(255,255,255)
-titleBar.Active = true
-titleBar.Parent = win
 corner(titleBar, 18)
 stroke(titleBar, 1, Color3.fromRGB(220,220,220))
 
@@ -177,6 +173,37 @@ closeBtn.Text = "×"
 closeBtn.TextSize = 24
 closeBtn.TextColor3 = Color3.fromRGB(120,30,30)
 closeBtn.Parent = titleBar
+
+local UIS = game:GetService("UserInputService")
+local dragging, dragStart, startPos
+
+win.Active = true
+win.Draggable = false
+titleBar.Active = false
+titleBar.Draggable = false
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = win.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        win.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+end)
 
 -- Search + Sort
 local topBar = Instance.new("Frame")
