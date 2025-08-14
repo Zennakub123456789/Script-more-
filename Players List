@@ -16,6 +16,7 @@ local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
 
 local LP = Players.LocalPlayer
 
@@ -140,6 +141,36 @@ titleBar.BackgroundColor3 = Color3.fromRGB(255,255,255)
 corner(titleBar, 18)
 stroke(titleBar, 1, Color3.fromRGB(220,220,220))
 
+local dragging, dragStart, startPos
+
+win.Active = true
+win.Draggable = false
+titleBar.Active = false
+titleBar.Draggable = false
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = win.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        win.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
 local title = Instance.new("TextLabel")
 title.BackgroundTransparency = 1
 title.Position = UDim2.fromOffset(16, 0)
@@ -173,37 +204,6 @@ closeBtn.Text = "×"
 closeBtn.TextSize = 24
 closeBtn.TextColor3 = Color3.fromRGB(120,30,30)
 closeBtn.Parent = titleBar
-
-local UIS = game:GetService("UserInputService")
-local dragging, dragStart, startPos
-
-win.Active = true
-win.Draggable = false
-titleBar.Active = false
-titleBar.Draggable = false
-
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = win.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-UIS.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        win.Position = UDim2.new(
-            startPos.X.Scale, startPos.X.Offset + delta.X,
-            startPos.Y.Scale, startPos.Y.Offset + delta.Y
-        )
-    end
-end)
 
 -- Search + Sort
 local topBar = Instance.new("Frame")
