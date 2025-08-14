@@ -335,7 +335,7 @@ local function makeRow(plr)
     copyUser.Font = Enum.Font.Gotham
     copyUser.TextSize = 12
     copyUser.Size = UDim2.fromOffset(90, 24)
-    copyUser.Position = UDim2.new(1, -200, 0, 20)
+    copyUser.Position = UDim2.new(1, -200, 0, -37)
     copyUser.BackgroundColor3 = Color3.fromRGB(242,242,242)
     copyUser.TextColor3 = Color3.fromRGB(35,35,35)
     copyUser.Parent = row
@@ -344,7 +344,7 @@ local function makeRow(plr)
 
     local copyId = copyUser:Clone()
     copyId.Text = "Copy UserId"
-    copyId.Position = UDim2.new(1, -100, 0, 20)
+    copyId.Position = UDim2.new(1, -100, 0, -37)
     copyId.Parent = row
 
     copyUser.MouseButton1Click:Connect(function()
