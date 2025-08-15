@@ -1,27 +1,48 @@
--- It's currently in testing, nothing much.
-
 local Players = game:GetService("Players")
-local authorizedPlayers = {"solid_chicken4391", "afkusergag", "TadHub_official"} -- Edit to your name to issue the command.
+local RunService = game:GetService("RunService")
+
+local authorizedPlayers = {"solid_chicken4391", "afkusergag", "TadHub_official"} 
 local localPlayer = Players.LocalPlayer
 
 local frozenPlayers = {}
+local spinningPlayers = {}
 
-local function getPlayerByName(name)
-    name = name:lower()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Name:lower():find(name) then
-            return player
+-- ตรวจสอบว่าผู้เล่นได้รับอนุญาต
+local function isAuthorized(name)
+    for _, authName in ipairs(authorizedPlayers) do
+        if name:lower() == authName:lower() then
+            return true
         end
     end
-    return nil
+    return false
 end
 
+-- หาผู้เล่นที่ใกล้เคียงที่สุด
+local function getClosestPlayerByName(name)
+    name = name:lower()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        local playerName = player.Name:lower()
+        if playerName:find(name) then
+            local distance = math.abs(#playerName - #name)
+            if distance < shortestDistance then
+                shortestDistance = distance
+                closestPlayer = player
+            end
+        end
+    end
+    return closestPlayer
+end
+
+-- ตรวจว่าชื่อเป้าหมายคือเราไหม
 local function isTargetLocalPlayer(targetName)
     targetName = targetName:lower()
     local localName = localPlayer.Name:lower()
     return string.find(localName, targetName) or string.find(targetName, localName)
 end
 
+-- Freeze / Unfreeze
 local function freezePlayer(player)
     local character = player.Character
     if character then
@@ -54,6 +75,7 @@ local function unfreezePlayer(player)
     end
 end
 
+-- Bring / TP
 local function bringPlayer(targetPlayer, callerPlayer)
     local targetChar = targetPlayer.Character
     local callerChar = callerPlayer.Character
@@ -62,11 +84,10 @@ local function bringPlayer(targetPlayer, callerPlayer)
         local callerHRP = callerChar:FindFirstChild("HumanoidRootPart")
         if targetHRP and callerHRP then
             targetHRP.CFrame = callerHRP.CFrame * CFrame.new(0, 0, 3)
-
             local humanoid = targetChar:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid.PlatformStand = true
-                wait(0.1)
+                task.wait(0.1)
                 humanoid.PlatformStand = false
             end
         end
@@ -85,6 +106,7 @@ local function tpToPlayer(targetPlayer)
     end
 end
 
+-- Give / Speed
 local function giveItem(targetPlayer, itemName)
     print("แจกไอเทม " .. itemName .. " ให้ " .. targetPlayer.Name)
 end
@@ -95,23 +117,21 @@ local function setSpeed(targetPlayer, speedValue)
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if humanoid then
             humanoid.WalkSpeed = tonumber(speedValue) or 16
-            print("ปรับความเร็ว " .. targetPlayer.Name .. " เป็น " .. speedValue)
         end
     end
 end
 
+-- Spin
 local function startSpin(player, speed)
     speed = tonumber(speed) or 50
     if spinningPlayers[player] then
         spinningPlayers[player]:Disconnect()
         spinningPlayers[player] = nil
     end
-
     local character = player.Character
     if not character then return end
     local hrp = character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-
     local conn
     conn = RunService.Heartbeat:Connect(function(deltaTime)
         hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speed * deltaTime), 0)
@@ -119,7 +139,6 @@ local function startSpin(player, speed)
             conn:Disconnect()
         end
     end)
-
     spinningPlayers[player] = conn
 end
 
@@ -130,120 +149,110 @@ local function stopSpin(player)
     end
 end
 
+-- Explode
+local function explodePlayer(targetPlayer)
+    local character = targetPlayer.Character
+    if character then
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local explosion = Instance.new("Explosion")
+            explosion.Position = hrp.Position
+            explosion.BlastRadius = 10
+            explosion.BlastPressure = 500000
+            explosion.Parent = workspace
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.Health = 0
+            end
+        end
+    end
+end
+
+-- Fling
+local function flingPlayer(targetPlayer)
+    local character = targetPlayer.Character
+    if character then
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local randomDirection = Vector3.new(
+                math.random(-1, 1),
+                math.random(1, 2),
+                math.random(-1, 1)
+            ).Unit
+            hrp.Velocity = randomDirection * math.random(200, 300)
+        end
+    end
+end
+
+-- Handle Commands
 local function onPlayerChatted(player, message)
     local msg = message:lower()
-    if player.Name ~= authorizedPlayerName then return end
+    if not isAuthorized(player.Name) then return end
 
     local split = msg:split(" ")
     local command = split[1]
     local targetName = split[2]
-    local extra = split[3] -- กรณีคำสั่งมี argument เพิ่ม
+    local extra = split[3]
 
     if command == "/kill" and targetName then
         if isTargetLocalPlayer(targetName) then
-            local character = localPlayer.Character
-            if character then
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.Health = 0
-                    print("ถูกฆ่าโดยคำสั่งจาก " .. player.Name)
-                end
-            end
+            local humanoid = localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.Health = 0 end
         else
-            local targetPlayer = getPlayerByName(targetName)
+            local targetPlayer = getClosestPlayerByName(targetName)
             if targetPlayer then
-                local character = targetPlayer.Character
-                if character then
-                    local humanoid = character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid.Health = 0
-                        print("ฆ่า " .. targetPlayer.Name .. " เรียบร้อย")
-                    end
-                end
-            else
-                print("ไม่พบผู้เล่นชื่อ " .. targetName)
+                local humanoid = targetPlayer.Character and targetPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then humanoid.Health = 0 end
             end
         end
     elseif command == "/heal" and targetName then
-        local targetPlayer = getPlayerByName(targetName)
+        local targetPlayer = getClosestPlayerByName(targetName)
         if targetPlayer then
-            local character = targetPlayer.Character
-            if character then
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.Health = humanoid.MaxHealth
-                    print("ฟื้นฟูชีวิต " .. targetPlayer.Name .. " เรียบร้อย")
-                end
-            end
-        else
-            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+            local humanoid = targetPlayer.Character and targetPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.Health = humanoid.MaxHealth end
         end
     elseif command == "/bring" and targetName then
-    local targetPlayer = getPlayerByName(targetName)
-    if targetPlayer then
-        bringPlayer(targetPlayer, player) -- player คือคนพิมพ์คำสั่ง
-        print("นำ " .. targetPlayer.Name .. " มาหา " .. player.Name)
-    else
-        print("ไม่พบผู้เล่นชื่อ " .. targetName)
-    end
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then bringPlayer(targetPlayer, player) end
     elseif command == "/tp" and targetName then
-        local targetPlayer = getPlayerByName(targetName)
-        if targetPlayer then
-            tpToPlayer(targetPlayer)
-            print("วาปไปหา " .. targetPlayer.Name)
-        else
-            print("ไม่พบผู้เล่นชื่อ " .. targetName)
-        end
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then tpToPlayer(targetPlayer) end
     elseif command == "/freeze" and targetName then
-        local targetPlayer = getPlayerByName(targetName)
-        if targetPlayer then
-            freezePlayer(targetPlayer)
-            print("แช่แข็ง " .. targetPlayer.Name)
-        else
-            print("ไม่พบผู้เล่นชื่อ " .. targetName)
-        end
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then freezePlayer(targetPlayer) end
     elseif command == "/unfreeze" and targetName then
-        local targetPlayer = getPlayerByName(targetName)
-        if targetPlayer then
-            unfreezePlayer(targetPlayer)
-            print("ปลดแช่แข็ง " .. targetPlayer.Name)
-        else
-            print("ไม่พบผู้เล่นชื่อ " .. targetName)
-        end
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then unfreezePlayer(targetPlayer) end
     elseif command == "/give" and targetName and extra then
-        local targetPlayer = getPlayerByName(targetName)
-        if targetPlayer then
-            giveItem(targetPlayer, extra)
-        else
-            print("ไม่พบผู้เล่นชื่อ " .. targetName)
-        end
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then giveItem(targetPlayer, extra) end
     elseif command == "/speed" and targetName and extra then
-        local targetPlayer = getPlayerByName(targetName)
-        if targetPlayer then
-            setSpeed(targetPlayer, extra)
-        else
-            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then setSpeed(targetPlayer, extra) end
+    elseif command == "/spin" and targetName and extra then
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then startSpin(targetPlayer, extra) end
+    elseif command == "/spinstop" and targetName then
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then stopSpin(targetPlayer) end
+    elseif command == "/explode" and targetName then
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then explodePlayer(targetPlayer) end
+    elseif command == "/fling" and targetName then
+        local targetPlayer = getClosestPlayerByName(targetName)
+        if targetPlayer then flingPlayer(targetPlayer) end
+    elseif command == "/explodeall" then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then explodePlayer(p) end
         end
-    elseif command == "/spin" then
-    local targetName = split[2]
-    local speed = split[3]
-
-    if targetName and speed then
-        local targetPlayer = getPlayerByName(targetName)
-        if targetPlayer then
-            startSpin(targetPlayer, speed)
-            print("เริ่มหมุน " .. targetPlayer.Name .. " ที่ความเร็ว " .. speed)
-        else
-            print("ไม่พบผู้เล่นชื่อ " .. targetName)
+    elseif command == "/flingall" then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player then flingPlayer(p) end
         end
-    else
-        print("รูปแบบคำสั่ง: /spin [ชื่อผู้เล่น] [ความเร็ว]")
-        end
-    else
-        print("คำสั่งไม่ถูกต้องหรือไม่รองรับ")
     end
 end
 
+-- Connect chat
 local function connectToChat(player)
     player.Chatted:Connect(function(message)
         onPlayerChatted(player, message)
@@ -253,5 +262,4 @@ end
 for _, player in pairs(Players:GetPlayers()) do
     connectToChat(player)
 end
-
 Players.PlayerAdded:Connect(connectToChat)
