@@ -1,0 +1,47 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "Tad Hub | Universe | 0.0.2",
+    Icon = "door-open",
+    Author = "By Tad Hub",
+    Folder = "TadHub_Universe",
+    Size = UDim2.fromOffset(550, 350),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    Background = "",
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+
+    User = {
+        Enabled = true,
+        Anonymous = true,
+        Callback = function()
+            print("clicked")
+        end,
+    },
+
+    KeySystem = {
+        Note = "Get Key System For Tad Hub",
+        API = {
+            {
+                Type = "platoboost",
+                ServiceId = 12345,
+                Secret = "your-platoboost-secret",
+            },
+        },
+
+        Thumbnail = {
+            Image = "rbxassetid://",
+            Title = "Tad Hub Keys System",
+        },
+        SaveKey = true,
+    },
+})
+
+WindUI.OnKeySuccess = function()
+    print("Key is correct! Loading GUI...")
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Tad%20Hub%20Universe"))()
+end
