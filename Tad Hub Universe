@@ -33,6 +33,22 @@ local Window = WindUI:CreateWindow({
             print("clicked")
         end,
     },
+    KeySystem = {
+        Note = "Get Key System For Tad Hub",
+        API = {
+            {
+                Type = "platoboost",
+                ServiceId = 5683,
+                Secret = "1e88032b-e163-4a76-81db-c59c8337b38c",
+            },
+        },
+
+        Thumbnail = {
+            Image = "rbxassetid://",
+            Title = "Tad Hub Keys System",
+        },
+        SaveKey = true,
+    },
 })
 
 Window:EditOpenButton({
