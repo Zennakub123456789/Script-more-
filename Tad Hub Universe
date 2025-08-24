@@ -70,10 +70,9 @@ local mapName = game:GetService("MarketplaceService"):GetProductInfo(placeId).Na
 
 local Button
 
-Button = Tab:Button({
+Button = Tab:Paragraph({
     Title = mapName,
     Desc = "Loading...",
-    Locked = true,
 })
 
 if isfile(filePath) then
