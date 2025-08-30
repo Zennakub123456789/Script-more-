@@ -205,7 +205,7 @@ LoadTeam = Tab:Button({
 
         local data = HttpService:JSONDecode(result)
         for _, uuid in ipairs(data.uuids or {}) do
-            petsServiceRemote:FireServer("EquipPet", uuid, CFrame.new(0, 0, 0))
+            petsServiceRemote:FireServer("EquipPet", uuid, CFrame.new(32.37, 3.00, -120.17))
             wait(0.1)
         end
 
