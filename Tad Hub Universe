@@ -775,8 +775,8 @@ local Section = Tab4:Section({
 })
 
 local Button = Tab4:Button({
-    Title = "Button",
-    Desc = "Test Button",
+    Title = "Afk Gui",
+    Desc = "Do you want AFK but are experiencing issues with being kicked when you are idle for more than 20 minutes? If so, click here.",
     Locked = false,
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Anti_AFK"))()
