@@ -1,0 +1,178 @@
+-- Anti-AFK GUI by TAD HUB
+repeat wait() until game:IsLoaded() and game.Players and game.Players.LocalPlayer and game.Players.LocalPlayer.Character
+
+if getgenv().AntiAfkExecuted then
+    getgenv().AntiAfkExecuted = false
+    getgenv().zamanbaslaticisi = false
+    if game.CoreGui:FindFirstChild("AntiAfkGui") then
+        game.CoreGui.AntiAfkGui:Destroy()
+    end
+end
+
+getgenv().AntiAfkExecuted = true
+getgenv().zamanbaslaticisi = true
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AntiAfkGui"
+ScreenGui.Parent = game.CoreGui
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 240, 0, 100)
+Frame.Position = UDim2.new(0.7, 0, 0.1, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0,10)
+UICorner.Parent = Frame
+
+local uselessframeone = Instance.new("Frame")
+uselessframeone.Parent = Frame
+uselessframeone.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+uselessframeone.Position = UDim2.new(0.004, 0, 0.275, 0)
+uselessframeone.Size = UDim2.new(0, 238, 0, 1.5) 
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0,25,0,25)
+CloseBtn.Position = UDim2.new(1,-28,0,3)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.TextScaled = true
+CloseBtn.Font = Enum.Font.SourceSans
+CloseBtn.Parent = Frame
+
+CloseBtn.MouseButton1Click:Connect(function()
+    getgenv().AntiAfkExecuted = false
+    getgenv().zamanbaslaticisi = false
+    ScreenGui:Destroy()
+end)
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1,-10,0,20)
+TitleLabel.Position = UDim2.new(0,5,0,5)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Anti AFK By TAD HUB"
+TitleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+TitleLabel.TextScaled = true
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = Frame
+
+local TimerLabel = Instance.new("TextLabel")
+TimerLabel.Size = UDim2.new(1,-10,0,20)
+TimerLabel.Position = UDim2.new(0,5,0,30)
+TimerLabel.BackgroundTransparency = 1
+TimerLabel.TextColor3 = Color3.fromRGB(255,255,255)
+TimerLabel.TextScaled = true
+TimerLabel.Font = Enum.Font.SourceSans
+TimerLabel.TextXAlignment = Enum.TextXAlignment.Left
+TimerLabel.Text = "0:00:00:00"
+TimerLabel.Parent = Frame
+
+local PingLabel = Instance.new("TextLabel")
+PingLabel.Size = UDim2.new(1,-10,0,20)
+PingLabel.Position = UDim2.new(0,5,0,55)
+PingLabel.BackgroundTransparency = 1
+PingLabel.TextColor3 = Color3.fromRGB(255,255,255)
+PingLabel.TextScaled = true
+PingLabel.Font = Enum.Font.SourceSans
+PingLabel.TextXAlignment = Enum.TextXAlignment.Left
+PingLabel.Text = "Ping: ..."
+PingLabel.Parent = Frame
+
+local FpsLabel = Instance.new("TextLabel")
+FpsLabel.Size = UDim2.new(1,-10,0,20)
+FpsLabel.Position = UDim2.new(0,5,0,80)
+FpsLabel.BackgroundTransparency = 1
+FpsLabel.TextColor3 = Color3.fromRGB(255,255,255)
+FpsLabel.TextScaled = true
+FpsLabel.Font = Enum.Font.SourceSans
+FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+FpsLabel.Text = "FPS: ..."
+FpsLabel.Parent = Frame
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    local goal = {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}
+    TweenService:Create(Frame,TweenInfo.new(0.05,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),goal):Play()
+end
+
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+local vu = game:GetService("VirtualUser")
+game.Players.LocalPlayer.Idled:Connect(function()
+    if getgenv().AntiAfkExecuted then
+        vu:CaptureController()
+        vu:ClickButton2(Vector2.new())
+    end
+end)
+
+spawn(function()
+    while getgenv().AntiAfkExecuted do
+        wait(60)
+        vu:CaptureController()
+        vu:ClickButton2(Vector2.new())
+    end
+end)
+
+spawn(function()
+    local seconds, minutes, hours, days = 0,0,0,0
+    while getgenv().zamanbaslaticisi do
+        wait(1)
+        seconds = seconds + 1
+        if seconds >= 60 then seconds = 0 minutes = minutes + 1 end
+        if minutes >= 60 then minutes = 0 hours = hours + 1 end
+        if hours >= 24 then hours = 0 days = days + 1 end
+        TimerLabel.Text = string.format("%d:%02d:%02d:%02d", days, hours, minutes, seconds)
+    end
+end)
+
+local FPS = {}
+local lastTick = tick()
+game:GetService("RunService").RenderStepped:Connect(function()
+    table.insert(FPS, tick())
+    for i=#FPS,1,-1 do
+        if FPS[i] < tick()-1 then table.remove(FPS,i) end
+    end
+    local fps = #FPS
+    FpsLabel.Text = "FPS: "..fps
+end)
+
+spawn(function()
+    while getgenv().AntiAfkExecuted do
+        wait(1)
+        local ping = math.floor(game:GetService("Stats"):FindFirstChild("PerformanceStats").Ping:GetValue())
+        PingLabel.Text = "Ping: "..ping.." ms"
+    end
+end)
