@@ -640,9 +640,8 @@ local hotkeyActive = false -- สถานะจริงที่ใช้ใ�
 
 local connectedPlayers = {}
 
-local statusLabel -- ตัวแสดงสถานะด้านขวาบน (จะสร้างตอนเปิด hotkeyControlEnabled)
+local statusLabel
 
--- ฟังก์ชันส่งข้อความ
 local function sendMessage(msg)
     if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
         local channels = TextChatService:FindFirstChild("TextChannels")
@@ -693,7 +692,6 @@ Players.PlayerAdded:Connect(function(player)
     connectPlayer(player)
 end)
 
--- สร้าง label แสดงสถานะที่ขวาบนหน้าจอ
 local function createStatusLabel()
     if statusLabel then statusLabel:Destroy() end
     statusLabel = Instance.new("TextLabel")
@@ -718,10 +716,8 @@ local function updateStatusLabel()
     statusLabel.Text = statusText
 end
 
--- สร้างสถานะตอนเริ่ม (ซ่อนก่อน)
 createStatusLabel()
 
--- GUI: ช่องกรอกชื่อผู้เล่น
 Tab3:Input({
     Title = "Target Player Name",
     Placeholder = "ใส่ชื่อผู้เล่นที่ต้องการ",
@@ -730,7 +726,6 @@ Tab3:Input({
     end,
 })
 
--- GUI: Toggle เปิด/ปิดระบบตามพิมพ์ แบบปกติ
 Tab3:Toggle({
     Title = "Enable Chat Follow (Toggle)",
     Default = false,
@@ -745,7 +740,6 @@ Tab3:Toggle({
     end,
 })
 
--- GUI: Toggle เปิด/ปิดระบบตามพิมพ์แบบกดปุ่ม F
 Tab3:Toggle({
     Title = "Enable Chat Follow (Hotkey F)",
     Default = false,
@@ -761,7 +755,6 @@ Tab3:Toggle({
     end,
 })
 
--- ฟัง event กดปุ่ม F เพื่อสลับสถานะ hotkeyActive
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if hotkeyControlEnabled and input.KeyCode == Enum.KeyCode.F then
@@ -769,3 +762,23 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         updateStatusLabel()
     end
 end)
+
+local Tab4 = Window:Tab({
+    Title = "Test",
+    Icon = "Main",
+    Locked = false,
+})
+local Section = Tab4:Section({ 
+    Title = "Anti-Afk",
+    TextXAlignment = "Left",
+    TextSize = 17,
+})
+
+local Button = Tab4:Button({
+    Title = "Button",
+    Desc = "Test Button",
+    Locked = false,
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Anti_AFK"))()
+    end
+})
