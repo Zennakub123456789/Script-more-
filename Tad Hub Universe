@@ -789,9 +789,9 @@ local Section = Tab4:Section({
     TextSize = 17,
 })
 
-local ToggleUI = Tab4:Toggle({
+local ToggleUI = Tab:Toggle({
     Title = "Teleport Ui",
-    Desc = "Add New Pets Gear Event Button",
+    Desc = "Add New Pets, Gear And Event Button",
     Icon = "layers",
     Type = "Checkbox",
     Default = false,
@@ -799,10 +799,57 @@ local ToggleUI = Tab4:Toggle({
         local plr = game:GetService("Players").LocalPlayer
         local frame = plr.PlayerGui:WaitForChild("Teleport_UI"):WaitForChild("Frame")
 
-        local petsFrame = frame:WaitForChild("Pets")
-        local gearFrame = frame:WaitForChild("Gear")
-        petsFrame.Visible = state
-        gearFrame.Visible = state
+        local function lockVisible(obj, val)
+            obj.Visible = val
+            obj:GetPropertyChangedSignal("Visible"):Connect(function()
+                if state then
+                    obj.Visible = val
+                end
+            end)
+        end
+
+        local petsOrig = frame:WaitForChild("Pets")
+        local petsClone
+        local gearOrig = frame:WaitForChild("Gear")
+        local gearClone
+
+        if state then
+            petsClone = petsOrig:Clone()
+            petsOrig:Destroy()
+            petsClone.Parent = frame
+            petsClone.Name = "Pets"
+            lockVisible(petsClone, true)
+
+            gearClone = gearOrig:Clone()
+            gearOrig:Destroy()
+            gearClone.Parent = frame
+            gearClone.Name = "Gear"
+            lockVisible(gearClone, true)
+
+            local petsBtn = petsClone:IsA("ImageButton") and petsClone or petsClone:FindFirstChildOfClass("ImageButton")
+            if petsBtn then
+                petsBtn.MouseButton1Click:Connect(function()
+                    local char = plr.Character or plr.CharacterAdded:Wait()
+                    local hrp = char:WaitForChild("HumanoidRootPart")
+                    hrp.CFrame = CFrame.new(-285.76, 3.00, -0.94)
+                end)
+            end
+
+            local gearBtn = gearClone:IsA("ImageButton") and gearClone or gearClone:FindFirstChildOfClass("ImageButton")
+            if gearBtn then
+                gearBtn.MouseButton1Click:Connect(function()
+                    local char = plr.Character or plr.CharacterAdded:Wait()
+                    local hrp = char:WaitForChild("HumanoidRootPart")
+                    hrp.CFrame = CFrame.new(-285.42, 3.00, -13.98)
+                end)
+            end
+
+        else
+            local pets = frame:FindFirstChild("Pets")
+            local gear = frame:FindFirstChild("Gear")
+            if pets then pets.Visible = false end
+            if gear then gear.Visible = false end
+        end
 
         local eventButton = frame:FindFirstChild("Event")
         if state then
@@ -814,26 +861,24 @@ local ToggleUI = Tab4:Toggle({
                 clone.Name = "Event"
                 clone.Parent = frame
 
-                local txt = clone:WaitForChild("Txt")
-                if txt:IsA("TextLabel") or txt:IsA("TextButton") then
-                    txt.Text = "Event"
-                end
+                local txt = clone:FindFirstChild("Txt")
+                if txt then txt.Text = "Event" end
 
-                local button = clone:IsA("TextButton") and clone or clone:FindFirstChildOfClass("TextButton")
-                if button then
-                    button.MouseButton1Click:Connect(function()
+                lockVisible(clone, true)
+
+                local btn = clone:IsA("ImageButton") and clone or clone:FindFirstChildOfClass("ImageButton")
+                if btn then
+                    btn.MouseButton1Click:Connect(function()
                         local char = plr.Character or plr.CharacterAdded:Wait()
                         local hrp = char:WaitForChild("HumanoidRootPart")
                         hrp.CFrame = CFrame.new(-89.98, 4.77, -16.15)
                     end)
                 end
             else
-                eventButton.Visible = true
+                lockVisible(eventButton, true)
             end
         else
-            if eventButton then
-                eventButton.Visible = false
-            end
+            if eventButton then eventButton.Visible = false end
         end
 
         print("Pets & Gear & Event Visible: " .. tostring(state))
