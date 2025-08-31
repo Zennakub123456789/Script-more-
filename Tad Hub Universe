@@ -782,3 +782,60 @@ local Button = Tab4:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Anti_AFK"))()
     end
 })
+
+local Section = Tab4:Section({ 
+    Title = "Teleport UI",
+    TextXAlignment = "Left",
+    TextSize = 17,
+})
+
+local ToggleUI = Tab4:Toggle({
+    Title = "Teleport Ui",
+    Desc = "Add New Pets Gear Event Button",
+    Icon = "layers",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        local plr = game:GetService("Players").LocalPlayer
+        local frame = plr.PlayerGui:WaitForChild("Teleport_UI"):WaitForChild("Frame")
+
+        local petsFrame = frame:WaitForChild("Pets")
+        local gearFrame = frame:WaitForChild("Gear")
+        petsFrame.Visible = state
+        gearFrame.Visible = state
+
+        local eventButton = frame:FindFirstChild("Event")
+        if state then
+            if not eventButton then
+                local garden = frame:WaitForChild("Garden")
+                garden.Name = "Garden1"
+                local clone = garden:Clone()
+                garden.Name = "Garden"
+                clone.Name = "Event"
+                clone.Parent = frame
+
+                local txt = clone:WaitForChild("Txt")
+                if txt:IsA("TextLabel") or txt:IsA("TextButton") then
+                    txt.Text = "Event"
+                end
+
+                local button = clone:IsA("TextButton") and clone or clone:FindFirstChildOfClass("TextButton")
+                if button then
+                    button.MouseButton1Click:Connect(function()
+                        local char = plr.Character or plr.CharacterAdded:Wait()
+                        local hrp = char:WaitForChild("HumanoidRootPart")
+                        hrp.CFrame = CFrame.new(-89.98, 4.77, -16.15)
+                    end)
+                end
+            else
+                eventButton.Visible = true
+            end
+        else
+            if eventButton then
+                eventButton.Visible = false
+            end
+        end
+
+        print("Pets & Gear & Event Visible: " .. tostring(state))
+    end
+})
