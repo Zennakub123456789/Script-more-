@@ -789,7 +789,7 @@ local Section = Tab4:Section({
     TextSize = 17,
 })
 
-local ToggleUI = Tab:Toggle({
+local ToggleUI = Tab4:Toggle({
     Title = "Teleport Ui",
     Desc = "Add New Pets, Gear And Event Button",
     Icon = "layers",
