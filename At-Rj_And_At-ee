@@ -1,0 +1,35 @@
+repeat wait() until game.Players.LocalPlayer
+local plr = game.Players.LocalPlayer
+
+if not getgenv().tvk then getgenv().tvk={} end
+for k,v in pairs(getgenv().tvk) do v.On=false end
+
+local queue_on_teleport = queue_on_teleport
+if syn then queue_on_teleport = syn.queue_on_teleport end
+
+queue_on_teleport([[
+loadstring(game:HttpGet("https://raw.githubusercontent.com/evxncodes/mainroblox/main/anti-afk"))()
+]])
+
+local isTeleporting = false
+
+task.spawn(function()
+    repeat wait() until game.CoreGui:FindFirstChild("RobloxPromptGui")
+    local promptOverlay = game.CoreGui.RobloxPromptGui.promptOverlay
+    promptOverlay.ChildAdded:Connect(function(child)
+        if child.Name == "ErrorPrompt" and not isTeleporting then
+            isTeleporting = true
+            repeat
+                game:GetService("TeleportService"):Teleport(game.PlaceId, plr)
+                wait(2)
+            until false
+        end
+    end)
+end)
+
+game:GetService("GuiService").ErrorMessageChanged:Connect(function(errorMessage)
+    if errorMessage and errorMessage ~= "" and not isTeleporting then
+        isTeleporting = true
+        game:GetService("TeleportService"):Teleport(game.PlaceId, plr)
+    end
+end)
