@@ -884,3 +884,216 @@ local ToggleUI = Tab4:Toggle({
         print("Pets & Gear & Event Visible: " .. tostring(state))
     end
 })
+
+local Tab5 = Window:Tab({
+    Title = "Helper",
+    Icon = "help",
+    Locked = false,
+})
+local Section = Tab5:Section({ 
+    Title = "Follow Part",
+    TextXAlignment = "Left",
+    TextSize = 17,
+})
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humroot = char:WaitForChild("HumanoidRootPart")
+
+player.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    humroot = newChar:WaitForChild("HumanoidRootPart")
+end)
+
+-- ตัวแปรระบบ
+local guiCreated = false
+local platform = nil
+local enabled = false
+local riseSpeed = 0.1 -- ความเร็วที่ยกขึ้น (stud ต่อวินาที)
+local maxDiff = 5     -- ถ้า part ห่างจากใต้ตีนเกิน 5 stud จะรีเซ็ตกลับมา
+
+-- ฟังก์ชันสร้าง GUI
+local function createPlatformGUI()
+    if guiCreated then return end
+    guiCreated = true
+
+    -- สร้าง GUI ปุ่ม TextButton
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "Part_Follow"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game:GetService("CoreGui")
+
+    local ToggleButton = Instance.new("TextButton", ScreenGui)
+    ToggleButton.Size = UDim2.new(0, 120, 0, 50)
+    ToggleButton.Position = UDim2.new(0.5, -60, 0.9, 0)
+    ToggleButton.Text = "🚀 Start Platform"
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 18
+    ToggleButton.Active = true
+    ToggleButton.Draggable = true
+
+    local enabled = false
+
+    -- ฟังก์ชันเปิด/ปิดแพลตฟอร์ม
+    local function togglePlatform()
+        enabled = not enabled
+        if enabled then
+            ToggleButton.Text = "⛔ Stop Platform"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+
+            platform = Instance.new("Part")
+            platform.Name = "FollowPart"
+            platform.Size = Vector3.new(6, 1, 6)
+            platform.Anchored = true
+            platform.Color = Color3.fromRGB(255, 255, 255)
+            platform.Material = Enum.Material.Neon
+            platform.Parent = workspace
+
+            task.spawn(function()
+                local height = 0
+                while enabled and platform do
+                    if humroot then
+                        local pos = humroot.Position
+                        height = height + riseSpeed
+                        local targetPos = Vector3.new(pos.X, pos.Y - 4 + height, pos.Z)
+
+                        local distance = (platform.Position - (pos - Vector3.new(0,3,0))).Magnitude
+                        if distance > maxDiff then
+                            height = 0
+                            targetPos = pos - Vector3.new(0,4,0)
+                        end
+
+                        platform.CFrame = CFrame.new(targetPos)
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        else
+            ToggleButton.Text = "🚀 Start Platform"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+            if platform then
+                platform:Destroy()
+                platform = nil
+            end
+        end
+    end
+
+    ToggleButton.MouseButton1Click:Connect(togglePlatform)
+end
+
+Tab5:Toggle({
+    Title = "Open Platform GUI",
+    Desc = "Open Part Follow",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        if state then
+            createPlatformGUI()
+        else
+            local existingGui = game:GetService("CoreGui"):FindFirstChild("Part_Follow")
+            if existingGui then
+                existingGui:Destroy()
+            end
+            guiCreated = false
+        end
+    end
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humroot = char:WaitForChild("HumanoidRootPart")
+
+player.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    humroot = newChar:WaitForChild("HumanoidRootPart")
+end)
+
+-- ตัวแปรระบบ
+local guiCreated = false
+local platform = nil
+local connection = nil
+
+-- ฟังก์ชันสร้าง GUI
+local function createPlatformGUI()
+    if guiCreated then return end
+    guiCreated = true
+
+    -- สร้าง GUI ปุ่ม TextButton
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "Part_Follow(v2)"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game:GetService("CoreGui")
+
+    local ToggleButton = Instance.new("TextButton", ScreenGui)
+    ToggleButton.Size = UDim2.new(0, 120, 0, 50)
+    ToggleButton.Position = UDim2.new(0.5, -60, 0.9, 0)
+    ToggleButton.Text = "🚀 Start Platform"
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 18
+    ToggleButton.Active = true
+    ToggleButton.Draggable = true
+
+    local enabled = false
+
+    -- ฟังก์ชันเปิด/ปิดแพลตฟอร์ม
+    local function togglePlatform()
+        enabled = not enabled
+        if enabled then
+            ToggleButton.Text = "⛔ Stop Platform"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+
+            platform = Instance.new("Part")
+            platform.Name = "FollowPart"
+            platform.Size = Vector3.new(6, 1, 6)
+            platform.Anchored = true
+            platform.Color = Color3.fromRGB(255, 255, 255)
+            platform.Material = Enum.Material.Neon
+            platform.Parent = workspace
+
+            connection = RunService.RenderStepped:Connect(function()
+                if humroot and platform then
+                    local pos = humroot.Position - Vector3.new(0,3,0)
+                    platform.CFrame = CFrame.new(pos)
+                end
+            end)
+        else
+            ToggleButton.Text = "🚀 Start Platform"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            if platform then
+                platform:Destroy()
+                platform = nil
+            end
+        end
+    end
+
+    ToggleButton.MouseButton1Click:Connect(togglePlatform)
+end
+
+Tab5:Toggle({
+    Title = "Open Platform GUI (v2)",
+    Desc = "Open Part Follow (v2)",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        if state then
+            createPlatformGUI()
+        else
+            local existingGui = game:GetService("CoreGui"):FindFirstChild("Part_Follow")
+            if existingGui then
+                existingGui:Destroy()
+            end
+            guiCreated = false
+        end
+    end
+})
