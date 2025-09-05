@@ -1046,7 +1046,7 @@ local function createPlatformGUI()
     local function togglePlatform()
         enabled = not enabled
         if enabled then
-            ToggleButton.Text = "⛔ Stop Platform"
+            ToggleButton.Text = "⛔ Stop Platform(v2)"
             ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 
             platform = Instance.new("Part")
@@ -1064,7 +1064,7 @@ local function createPlatformGUI()
                 end
             end)
         else
-            ToggleButton.Text = "🚀 Start Platform"
+            ToggleButton.Text = "🚀 Start Platform(v2)"
             ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
             if connection then
                 connection:Disconnect()
