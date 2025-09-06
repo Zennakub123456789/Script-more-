@@ -1124,3 +1124,30 @@ if allowedMaps[game.PlaceId] then
         end
     })
 end
+
+local allowedMaps = {
+    [126884695634066] = true,
+}
+
+if allowedMaps[game.PlaceId] then
+    local TabGarden1 = Window:Tab({
+        Title = "[✨] Grow a Graden 🌶️",
+        Icon = "help",
+        Locked = false,
+    })
+
+    local Section = TabGarden1:Section({ 
+        Title = "Script",
+        TextXAlignment = "Left",
+        TextSize = 17,
+    })
+
+    local ButtonGaeden1 = TabGarden1:Button({
+        Title = "1",
+        Desc = "Automatic and More",
+        Locked = false,
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        end
+    })
+end
