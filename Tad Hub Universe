@@ -1097,3 +1097,38 @@ Tab5:Toggle({
         end
     end
 })
+
+local allowedMaps = {
+    [109983668079237] = true,
+}
+
+if allowedMaps[game.PlaceId] then
+    local TabSteal1 = Window:Tab({
+        Title = "[🍓] Steal a Brainrot",
+        Icon = "help",
+        Locked = false,
+    })
+
+    local Section = TabSteal1:Section({ 
+        Title = "Script",
+        TextXAlignment = "Left",
+        TextSize = 17,
+    })
+end
+
+local Button = TabSteal1:Button({
+    Title = "Button",
+    Desc = "Test Button",
+    Locked = false,
+    Callback = function()
+        print("clicked")
+    end
+})
+local ButtonSteal1 = Tab:Button({
+    Title = "Button",
+    Desc = "Test Button",
+    Locked = false,
+    Callback = function()
+        loadstring(game:HttpGet("https://pastefy.app/NU4lqGZe/raw"))()
+    end
+})
