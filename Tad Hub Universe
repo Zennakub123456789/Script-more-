@@ -1125,6 +1125,71 @@ if allowedMaps[game.PlaceId] then
     })
 end
 
+-- Noclip Toggle for WindUI
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- state + connection holder
+local noclipEnabled = false
+local noclipConn
+
+-- core noclip function
+local function setNoclip(state)
+    -- disconnect previous loop if any
+    if noclipConn then
+        noclipConn:Disconnect()
+        noclipConn = nil
+    end
+
+    noclipEnabled = state
+
+    if state then
+        -- maintain no-collision every step (keeps working across physics / short glitches)
+        noclipConn = RunService.Stepped:Connect(function()
+            local char = player.Character
+            if not char then return end
+            -- set all BaseParts to CanCollide = false
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+    else
+        -- disable: try to restore basic collisions (simple approach: set all BaseParts true)
+        local char = player.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+end
+
+-- keep noclip active after respawn if enabled
+player.CharacterAdded:Connect(function(char)
+    -- small delay ให้โมเดลโหลดพาร์ทก่อน
+    task.wait(0.1)
+    if noclipEnabled then
+        setNoclip(true)
+    end
+end)
+
+    local Toggle = TabSteal1:Toggle({
+        Title = "Noclip",
+        Desc = "เปิด/ปิด Noclip",
+        Icon = "bird",
+        Type = "Checkbox",
+        Default = false,
+        Callback = function(state)
+            setNoclip(state)
+        end
+    })
+
 local allowedMaps = {
     [126884695634066] = true,
 }
