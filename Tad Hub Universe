@@ -544,68 +544,31 @@ Tab2:Button({
     end
 })
 
-Tab2:Button({
-    Title = "Join Low Players",
-    Desc = "It will go to lower Player in server",
+local Button = Tab2:Button({
+    Title = "Lower Player",
+    Desc = "it Teleport to Lower Player in your Game is play",
     Callback = function()
-        local Players = game:GetService("Players")
-        local TeleportService = game:GetService("TeleportService")
-        local HttpService = game:GetService("HttpService")
+        local Player = game.Players.LocalPlayer    
+        local Http = game:GetService("HttpService")
+        local TPS = game:GetService("TeleportService")
+        local Api = "https://games.roblox.com/v1/games/"
 
-        local player = Players.LocalPlayer
-        local placeId = game.PlaceId
-        local currentJobId = game.JobId
+        local _place = game.PlaceId
+        local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
 
-        local function getServers(cursor)
-            local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
-            if cursor then
-                url = url .. "&cursor=" .. cursor
-            end
-            local success, result = pcall(function()
-                return HttpService:JSONDecode(game:HttpGet(url))
-            end)
-            return success and result or nil
+        local function ListServers(cursor)
+            local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
+            return Http:JSONDecode(Raw)
         end
 
-        local function findLowestPopulationServer(maxPages)
-            local cursor = nil
-            local lowestServer = nil
-
-            for i = 1, maxPages do
-                local result = getServers(cursor)
-                if not result then break end
-
-                for _, server in pairs(result.data) do
-                    if server.id ~= currentJobId and server.playing < server.maxPlayers then
-                        if not lowestServer or server.playing < lowestServer.playing then
-                            lowestServer = server
-                        end
-                    end
-                end
-
-                cursor = result.nextPageCursor
-                if not cursor then break end
-                task.wait(0.1)
-            end
-
-            return lowestServer
-        end
-
-        print("🔍 กำลังค้นหา Server ที่คนน้อยที่สุด...")
-
-        local bestServer = findLowestPopulationServer(5)
-
-        if bestServer then
-            print("✅ เจอแล้ว! คนในเซิร์ฟนี้มีแค่: " .. bestServer.playing)
-            TeleportService:TeleportToPlaceInstance(placeId, bestServer.id, player)
+        local success, Servers = pcall(ListServers)
+        if success and Servers.data and #Servers.data > 0 then
+            table.sort(Servers.data, function(a,b) return a.playing < b.playing end)
+            local SmallestServer = Servers.data[1]
+            
+            TPS:TeleportToPlaceInstance(_place, SmallestServer.id, Player)
         else
-            warn("❌ No servers found that are not full yet.")
-            WindUI:Notify({
-                Title = "❌ Serve not found",
-                Content = "Failed to find server",
-                Icon = "user-x",
-                Duration = 4,
-            })
+            warn("ไม่สามารถดึง server ได้")
         end
     end
 })
