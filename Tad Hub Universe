@@ -485,9 +485,15 @@ local Buttonserver = Tab2:Button({
     Desc = "It will go to the others Servers",
     Locked = false,
     Callback = function()
-        local module = loadstring(game:HttpGet"https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Serverhop")()
+        local success, module = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Serverhop"))()
+        end)
 
-module:Teleport(game.PlaceId)
+        if success and module and module.Teleport then
+            module:Teleport(game.PlaceId)
+        else
+            warn("ไม่สามารถโหลด Module Serverhop ได้หรือไม่มีฟังก์ชัน Teleport")
+        end
     end
 })
 
