@@ -480,71 +480,18 @@ local Section = Tab2:Section({
     TextSize = 17, -- Default Size
 })
 
-Tab2:Button({
+local Buttonserver = Tab2:Button({
     Title = "Serverhop",
     Desc = "It will go to the others Servers",
+    Locked = false,
     Callback = function()
-        local Players = game:GetService("Players")
-        local TeleportService = game:GetService("TeleportService")
-        local HttpService = game:GetService("HttpService")
+        local module = loadstring(game:HttpGet"https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Serverhop")()
 
-        local player = Players.LocalPlayer
-        local placeId = game.PlaceId
-        local currentJobId = game.JobId
-        local visitedServers = {}
-
-        local function getServers(cursor)
-            local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Desc&limit=100"
-            if cursor then
-                url = url .. "&cursor=" .. cursor
-            end
-            local success, result = pcall(function()
-                return HttpService:JSONDecode(game:HttpGet(url))
-            end)
-            return success and result or nil
-        end
-
-        local function collectServers(pages)
-            local allServers = {}
-            local cursor = nil
-            for i = 1, pages do
-                local data = getServers(cursor)
-                if not data then break end
-                for _, server in pairs(data.data) do
-                    if server.id ~= currentJobId and server.playing < server.maxPlayers then
-                        if not visitedServers[server.id] then
-                            table.insert(allServers, server)
-                        end
-                    end
-                end
-                cursor = data.nextPageCursor
-                if not cursor then break end
-                task.wait(0.1)
-            end
-            return allServers
-        end
-
-        print("📡 ค้นหา Server ว่างในแมพขนาดใหญ่...")
-
-        local servers = collectServers(500)
-        if #servers > 0 then
-            local selected = servers[math.random(1, #servers)]
-            visitedServers[selected.id] = true
-            print("✅ วาร์ปไปเซิร์ฟ ID: " .. selected.id)
-            TeleportService:TeleportToPlaceInstance(placeId, selected.id, player)
-        else
-            warn("❌ ยังไม่เจอ Server ที่ว่างเลย 😓")
-            WindUI:Notify({
-                Title = "❌ ไม่พบเซิร์ฟว่าง",
-                Content = "ลองใหม่อีกครั้งภายหลังนะ",
-                Icon = "wifi-off",
-                Duration = 4,
-            })
-        end
+module:Teleport(game.PlaceId)
     end
 })
 
-local Button = Tab:Button({
+local Buttonserver2 = Tab2:Button({
     Title = "Lower Players",
     Desc = "it Teleport to Lower Player in your Game is play",
     Callback = function()
