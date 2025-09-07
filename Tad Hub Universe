@@ -544,8 +544,8 @@ Tab2:Button({
     end
 })
 
-local Button = Tab2:Button({
-    Title = "Lower Player",
+local Button = Tab:Button({
+    Title = "Lower Players",
     Desc = "it Teleport to Lower Player in your Game is play",
     Callback = function()
         local Player = game.Players.LocalPlayer    
@@ -556,20 +556,29 @@ local Button = Tab2:Button({
         local _place = game.PlaceId
         local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
 
-        local function ListServers(cursor)
-            local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
-            return Http:JSONDecode(Raw)
+        local function Warp()
+            local success, Servers = pcall(function()
+                local Raw = game:HttpGet(_servers)
+                return Http:JSONDecode(Raw)
+            end)
+
+            if success and Servers.data and #Servers.data > 0 then
+                table.sort(Servers.data, function(a,b) return a.playing < b.playing end)
+                local SmallestServer = Servers.data[1]
+
+                TPS:TeleportToPlaceInstance(_place, SmallestServer.id, Player)
+            else
+                warn("can't Teleport")
+            end
         end
 
-        local success, Servers = pcall(ListServers)
-        if success and Servers.data and #Servers.data > 0 then
-            table.sort(Servers.data, function(a,b) return a.playing < b.playing end)
-            local SmallestServer = Servers.data[1]
-            
-            TPS:TeleportToPlaceInstance(_place, SmallestServer.id, Player)
-        else
-            warn("ไม่สามารถดึง server ได้")
-        end
+        Warp()
+
+        task.delay(2, function()
+            if Player and Player.Parent then
+                Warp()
+            end
+        end)
     end
 })
 
