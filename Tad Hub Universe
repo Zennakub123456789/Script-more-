@@ -486,7 +486,7 @@ local Buttonserver = Tab2:Button({
     Locked = false,
     Callback = function()
         local success, module = pcall(function()
-            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Serverhop"))()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Zennakub123456789/Script-more-/refs/heads/main/Serverhop.lua"))()
         end)
 
         if success and module and module.Teleport then
