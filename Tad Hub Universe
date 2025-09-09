@@ -85,7 +85,7 @@ local function readLastKeyTime()
     end)
     if success then
         local data = HttpService:JSONDecode(content)
-        return data.time or os.time() -- ใช้ field "time" ตามไฟล์
+        return data.time or os.time()
     end
     return os.time()
 end
@@ -117,7 +117,7 @@ task.spawn(function()
             local hours = math.floor(remaining / 3600)
             local minutes = math.floor((remaining % 3600) / 60)
             local seconds = remaining % 60
-            Button:SetDesc(string.format("Time left %02d:%02d:%02d", hours, minutes, seconds))
+            Keytime:SetDesc(string.format("Time left %02d:%02d:%02d", hours, minutes, seconds))
         end
     end
 end)
