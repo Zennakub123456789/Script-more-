@@ -75,6 +75,53 @@ Button = Tab:Paragraph({
     Desc = "Loading...",
 })
 
+local HttpService = game:GetService("HttpService")
+
+local countdownTime = 24 * 60 * 60 
+
+local function readLastKeyTime()
+    local success, content = pcall(function()
+        return readfile("LastKeys.json")
+    end)
+    if success then
+        local data = HttpService:JSONDecode(content)
+        return data.time or os.time() -- ใช้ field "time" ตามไฟล์
+    end
+    return os.time()
+end
+
+local lastKeyTime = readLastKeyTime()
+
+
+local Keytime = Tab:Paragraph({
+    Title = "Key expiration time",
+    Desc = "Loading...",
+})
+
+task.spawn(function()
+    while task.wait(1) do
+        local remaining = (lastKeyTime + countdownTime) - os.time()
+
+        if remaining <= 0 then
+            Button:SetDesc("Key expired Go To Get Key")
+
+            repeat
+                task.wait(2)
+                local newTime = readLastKeyTime()
+                if newTime ~= lastKeyTime then
+                    lastKeyTime = newTime
+                    break
+                end
+            until false
+        else
+            local hours = math.floor(remaining / 3600)
+            local minutes = math.floor((remaining % 3600) / 60)
+            local seconds = remaining % 60
+            Button:SetDesc(string.format("Time left %02d:%02d:%02d", hours, minutes, seconds))
+        end
+    end
+end)
+
 if isfile(filePath) then
     Button:SetDesc("This Game Have Waypoints file")
 else
