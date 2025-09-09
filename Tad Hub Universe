@@ -938,26 +938,41 @@ player.CharacterAdded:Connect(function(newChar)
     humroot = newChar:WaitForChild("HumanoidRootPart")
 end)
 
--- ตัวแปรระบบ
 local guiCreated = false
 local platform = nil
 local connection = nil
 
--- ฟังก์ชันสร้าง GUI
 local function createPlatformGUI()
     if guiCreated then return end
     guiCreated = true
 
-    -- สร้าง GUI ปุ่ม TextButton
+    pcall(function()
+        if getgenv()["._Part_Follow(v2)"] and getgenv()["._Part_Follow(v2)"].Destroy then
+            getgenv()["._Part_Follow(v2)"]:Destroy()
+        end
+    end)
+
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "Part_Follow(v2)"
     ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = game:GetService("CoreGui")
+
+    ScreenGui.Parent = getSafeParent()
+    protectGui(ScreenGui)
+    getgenv()["._Part_Follow(v2)"] = ScreenGui
+
+    ScreenGui.AncestryChanged:Connect(function(_, parent)
+        if not parent then
+            task.wait()
+            ScreenGui.Parent = getSafeParent()
+            protectGui(ScreenGui)
+            getgenv()["._Part_Follow(v2)"] = ScreenGui
+        end
+    end)
 
     local ToggleButton = Instance.new("TextButton", ScreenGui)
     ToggleButton.Size = UDim2.new(0, 120, 0, 50)
     ToggleButton.Position = UDim2.new(0.5, -60, 0.9, 0)
-    ToggleButton.Text = "🚀 Start Platform(v2)"
+    ToggleButton.Text = "Start Platform(v2)"
     ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
     ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     ToggleButton.Font = Enum.Font.GothamBold
@@ -967,11 +982,10 @@ local function createPlatformGUI()
 
     local enabled = false
 
-    -- ฟังก์ชันเปิด/ปิดแพลตฟอร์ม
     local function togglePlatform()
         enabled = not enabled
         if enabled then
-            ToggleButton.Text = "⛔ Stop Platform(v2)"
+            ToggleButton.Text = "Stop Platform(v2)"
             ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 
             platform = Instance.new("Part")
@@ -989,7 +1003,7 @@ local function createPlatformGUI()
                 end
             end)
         else
-            ToggleButton.Text = "🚀 Start Platform(v2)"
+            ToggleButton.Text = "Start Platform(v2)"
             ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
             if connection then
                 connection:Disconnect()
