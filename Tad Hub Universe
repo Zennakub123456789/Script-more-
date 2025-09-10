@@ -162,7 +162,7 @@ local function UpdateDropdowns()
 end
 
 Tab:Input({
-    Title = "📝 Waypoints Name",
+    Title = "Waypoints Name",
     Desc = "Set Name Your want ",
     Placeholder = "input here",
     Callback = function(text)
@@ -171,7 +171,7 @@ Tab:Input({
 })
 
 Tab:Button({
-    Title = "➕ Set Waypoint",
+    Title = "Set Waypoint",
     Desc = "Save your location",
     Callback = function()
         if WaypointName == "" then
@@ -198,12 +198,12 @@ Tab:Button({
 })
 
 Tab:Button({
-    Title = "💾 Save Waypoints to a file",
+    Title = "Save Waypoints to a file",
     Desc = "Click to save all to a JSON file and if you have deleted Waypoints, click to save again. (Must do)",
     Callback = function()
         if #Waypoints == 0 then
             WindUI:Notify({
-                Title = "⚠️ No Information",
+                Title = "No Information",
                 Content = "There are no waypoints to save.",
                 Icon = "alert-circle",
                 Duration = 3,
@@ -236,14 +236,14 @@ Tab:Button({
 
         if success then
             WindUI:Notify({
-                Title = "✅ Save successful",
+                Title = "Save successful",
                 Content = "Waypoints Save at:\n" .. filePath,
                 Icon = "save",
                 Duration = 4,
             })
         else
             WindUI:Notify({
-                Title = "❌ Save failed",
+                Title = "Save failed",
                 Content = "Error: " .. tostring(result),
                 Icon = "x",
                 Duration = 4,
@@ -259,7 +259,7 @@ local Section = Tab:Section({
 })
 
 DropdownTeleport = Tab:Dropdown({
-    Title = "🚀 Select the location to teleport",
+    Title = "Select the location to teleport",
     Values = {},
     Value = nil,
     Callback = function(option)
@@ -268,7 +268,7 @@ DropdownTeleport = Tab:Dropdown({
 })
 
 Tab:Button({
-    Title = "📦 Teleport to Waypoint",
+    Title = "Teleport to Waypoint",
     Desc = "Teleport to the selected Waypoints",
     Callback = function()
         local character = LocalPlayer.Character
@@ -322,7 +322,7 @@ local Section = Tab:Section({
 })
 
 DropdownDelete = Tab:Dropdown({
-    Title = "🗑️ Select the waypoints to delete.",
+    Title = "Select the waypoints to delete.",
     Values = {},
     Value = nil,
     Callback = function(option)
@@ -331,7 +331,7 @@ DropdownDelete = Tab:Dropdown({
 })
 
 Tab:Button({
-    Title = "❌ Delete the selected waypoints",
+    Title = "Delete the selected waypoints",
     Desc = "Delete the selected Waypoints from the delete list. Please go back and save it.",
     Callback = function()
         for i, wp in pairs(Waypoints) do
@@ -385,14 +385,14 @@ do
             UpdateDropdowns()
 
             WindUI:Notify({
-                Title = "📥 Waypoints loaded successfully",
+                Title = "Waypoints loaded successfully",
                 Content = ": " .. tostring(#Waypoints),
                 Icon = "download",
                 Duration = 3
             })
         else
             WindUI:Notify({
-                Title = "❌ Load failed",
+                Title = "Load failed",
                 Content = "Failed to read JSON",
                 Icon = "x",
                 Duration = 4
@@ -420,7 +420,6 @@ local WalkSpeedEnabled = false
 local WalkSpeedValue = 16
 local DefaultWalkSpeed = 16
 
--- เก็บค่า WalkSpeed ดั้งเดิมตอนโหลดตัวละคร
 LocalPlayer.CharacterAdded:Connect(function(char)
     local humanoid = char:WaitForChild("Humanoid")
     DefaultWalkSpeed = humanoid.WalkSpeed
@@ -437,7 +436,6 @@ Tab:Input({
         if num and num > 0 then
             WalkSpeedValue = num
 
-            -- ถ้าเปิดอยู่ ให้เปลี่ยน WalkSpeed ทันที
             if WalkSpeedEnabled then
                 local character = LocalPlayer.Character
                 if character then
@@ -481,13 +479,13 @@ local Section = Tab2:Section({
 })
 
 Tab2:Button({
-    Title = "📋 Copy JobId",
+    Title = "Copy JobId",
     Desc = "It will Copy JobId this Server to Clipboard",
     Callback = function()
         setclipboard(game.JobId)
 
         WindUI:Notify({
-            Title = "📋 succeed!",
+            Title = "succeed!",
             Content = "JobId copied",
             Icon = "clipboard-copy",
             Duration = 3,
@@ -504,12 +502,12 @@ Tab2:Input({
 })
 
 Tab2:Button({
-    Title = "🚀 teleport to JobId",
+    Title = "Teleport to JobId",
     Desc = "Teleport to the server.",
     Callback = function()
         if JobIdInput == "" then
             WindUI:Notify({
-                Title = "❌ Failed",
+                Title = "Failed",
                 Content = "Please enter your JobId first.",
                 Icon = "alert-circle",
                 Duration = 3,
@@ -878,14 +876,12 @@ player.CharacterAdded:Connect(function(newChar)
     humroot = newChar:WaitForChild("HumanoidRootPart")
 end)
 
--- ตัวแปรระบบ
 local guiCreated = false
 local platform = nil
 local enabled = false
-local riseSpeed = 0.1 -- ความเร็วที่ยกขึ้น (stud ต่อวินาที)
-local maxDiff = 5     -- ถ้า part ห่างจากใต้ตีนเกิน 5 stud จะรีเซ็ตกลับมา
+local riseSpeed = 0.1
+local maxDiff = 5
 
--- ฟังก์ชันสร้าง GUI
 local function createPlatformGUI()
     if guiCreated then return end
     guiCreated = true
@@ -1140,6 +1136,164 @@ local Toggle = Tab5:Toggle({
     Default = false,
     Callback = function(state)
         setNoclip(state)
+    end
+})
+
+local Tab6 = Window:Tab({
+    Title = "Trolls",
+    Icon = "Troll",
+    Locked = false,
+})
+local Section = Tab6:Section({ 
+    Title = "Trolls",
+    TextXAlignment = "Left",
+    TextSize = 17,
+})
+
+local isActive = false
+local targetPlayerName = "PlayerNameHere"
+local radius = 2.5
+local speed = 15
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+local function getTargetPlayer()
+    for _, plr in ipairs(game.Players:GetPlayers()) do
+        if plr.Name == targetPlayerName then
+            return plr
+        end
+    end
+    return nil
+end
+
+local function levenshtein(a, b)
+    local len_a, len_b = #a, #b
+    local matrix = {}
+    for i = 0, len_a do
+        matrix[i] = {}
+        matrix[i][0] = i
+    end
+    for j = 0, len_b do
+        matrix[0][j] = j
+    end
+    for i = 1, len_a do
+        for j = 1, len_b do
+            local cost = (a:sub(i,i) == b:sub(j,j)) and 0 or 1
+            matrix[i][j] = math.min(
+                matrix[i-1][j] + 1,
+                matrix[i][j-1] + 1,
+                matrix[i-1][j-1] + cost
+            )
+        end
+    end
+    return matrix[len_a][len_b]
+end
+
+local function findClosestName(input)
+    local players = game.Players:GetPlayers()
+    local closestName = players[1] and players[1].Name or ""
+    local shortestDist = math.huge
+
+    for _, plr in ipairs(players) do
+        local dist = levenshtein(input:lower(), plr.Name:lower())
+        if dist < shortestDist then
+            shortestDist = dist
+            closestName = plr.Name
+        end
+    end
+    return closestName
+end
+
+Tab6:Toggle({
+    Title = "Fly Around Player",
+    Default = false,
+    Callback = function(state)
+        isActive = state
+        if state then
+            print("Start flying around the player")
+            
+            spawn(function()
+                while isActive do
+                    local targetPlayer = getTargetPlayer()
+                    if targetPlayer and targetPlayer.Character then
+                        local targetPosition = targetPlayer.Character:WaitForChild("HumanoidRootPart").Position
+                        local angle = tick() * speed
+                        local newPosition = targetPosition + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+                        humanoidRootPart.CFrame = CFrame.new(newPosition)
+                    end
+                    wait(0)
+                end
+            end)
+            
+            spawn(function()
+                while isActive do
+                    local targetPlayer = getTargetPlayer()
+                    if targetPlayer and targetPlayer.Character then
+                        local targetPosition = targetPlayer.Character:WaitForChild("HumanoidRootPart").Position
+                        humanoidRootPart.CFrame = CFrame.lookAt(humanoidRootPart.Position, targetPosition)
+                    end
+                    wait(0)
+                end
+            end)
+        else
+            print("Stop flying around the player")
+        end
+    end
+})
+
+Tab6:Input({
+    Title = "Target Player",
+    Placeholder = "Set Players Name",
+    Callback = function(text, inputObject)
+        local found = false
+        for _, plr in ipairs(game.Players:GetPlayers()) do
+            if plr.Name:lower() == text:lower() then
+                targetPlayerName = plr.Name
+                found = true
+                break
+            end
+        end
+
+        if not found then
+            local closest = findClosestName(text)
+            targetPlayerName = closest
+            if inputObject and inputObject.Set then
+                inputObject:Set(closest)
+            end
+            print("Player name not found '"..text.."', Set Target to '"..closest.."' .")
+        else
+            print("Target Player set to: "..targetPlayerName)
+        end
+    end
+})
+
+Tab6:Input({
+    Title = "Radius",
+    Placeholder = "Set Radius",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then
+            radius = num
+            print("Radius set to: "..radius)
+        else
+            print("Please enter numbers only.")
+        end
+    end
+})
+
+Tab6:Input({
+    Title = "Speed",
+    Placeholder = " Set Speed",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then
+            speed = num
+            print("Speed set to: "..speed)
+        else
+            print("Please enter numbers only.")
+        end
     end
 })
 
